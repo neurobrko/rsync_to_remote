@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "rsync-to-vm"
+version = "0.1.0"
+description = ""
+authors = ["Marek Paulik <marpauli@cisco.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+setuptools = "^75.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
