@@ -3,7 +3,7 @@ host = "10.122.58.49"
 username = "root"
 host_address = "138"
 port = f"13{host_address}"
-rsync_options = ("rsync", "-rtvz", "--progress", "-e", f"ssh -p {port}")
+rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {port}"]
 local_root_dir = "/home/marpauli/code/cisco/_SIMPLE/"
 
 # SCRIPT SETTINGS
@@ -11,18 +11,28 @@ VM_check_timeout = 3
 result_timeout = 10
 date_format = "%Y-%m-%d %H:%M:%S"
 
+# SYNC ALL FILES IN <file_map>
+sync_all = False
+# SYNC ALL FILES FROM SPECIFIED PROJECT
+project = None
+# LIST OF FILES TO SYNC
+# WARNING: Must be list even with single item!
+file_keys = [99]
+
+# INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
+
 # FILE MAPPING
-# dict = {project: {num: ["local_source", "remote_target"]}}
+# dict = {"project": {num: ["local_source", "remote_target"]}}
 # WARNING: num MUST be unique!
 file_map = {
     "test": {
         99: [
-            "/home/marpauli/code/cisco/rsync_to_VM/rsync_test/src/test.txt",
-            "/home/marpauli/code/cisco/rsync_to_VM/rsync_test/trg/test.txt",
+            "/home/marpauli/code/cisco/rsync_to_VM/test_rsync/src/test.txt",
+            "/home/marpauli/code/cisco/rsync_to_VM/test_rsync/trg/test.txt",
         ],
         98: [
-            "/home/marpauli/code/cisco/rsync_to_VM/rsync_test/src/source.txt",
-            "/home/marpauli/code/cisco/rsync_to_VM/rsync_test/trg/source.txt",
+            "/home/marpauli/code/cisco/rsync_to_VM/test_rsync/src/source.txt",
+            "/home/marpauli/code/cisco/rsync_to_VM/test_rsync/trg/source.txt",
         ],
     },
     "6930": {

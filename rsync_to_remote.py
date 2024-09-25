@@ -1,21 +1,72 @@
-#!/usr/bin/env
+#!/usr/bin/env python
 
 import sync_conf as sc
 from subprocess import run
+from error_handler import RepeatingKeyError, BadFileSyncDefinition
+import argparse
+from os import path
 
 # OVERRIDE SETTINGS FOR TESTING
 sc.host = "localhost"
 sc.username = "marpauli"
 sc.port = "22"
-sc.rsync_options = ["rsync", "-rtvz", "--progress", "-e", f"ssh -p {sc.port}"]
+sc.rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {sc.port}"]
 sc.local_root_dir = ""
+# sc.project = "test"
+
+# set-up arg parser
+ap = argparse.ArgumentParser()
+ap.add_argument("-r", "--remote", help="Remote host for synchronization")
+ap.add_argument("-u", "--username", help="Remote username")
+ap.add_argument("-ha", "--host_address", help="Host address part of IP")
+ap.add_argument("-s", "--ssh_port", help="SSH port")
+ap.add_argument("-l", "--local_root_dir", help="Root directory for source files")
+ap.add_argument("-vt", "--vm_timeout", help="Timeout to check VM info", type=int)
+ap.add_argument(
+    "-rt", "--result_timeout", help="Timeout to check script output", type=int
+)
+ap.add_argument(
+    "-a", "--sync_all", help="Sync all files from all projects", action="store_true"
+)
+ap.add_argument("-p", "--project", help="Sync all files from project")
+ap.add_argument(
+    "-f", "--files", help="Sync selected files. No spaces, comma as separator."
+)
+
+args = ap.parse_args()
+
+# override settings, if set from cli
+if args.remote:
+    sc.host = args.remote
+if args.username:
+    sc.username = args.username
+if args.host_address:
+    sc.host_address = args.host_address
+if args.ssh_port:
+    sc.port = args.ssh_port
+if args.local_root_dir:
+    sc.local_root_dir = args.local_root_dir
+if args.vm_timeout:
+    sc.VM_check_timeout = args.vm_timeoout
+if args.result_timeout:
+    sc.result_timeout = args.result_timeout
+if args.sync_all:
+    sc.sync_all = True
+if args.project:
+    sc.project = args.project
+if args.files:
+    sc.file_keys = [int(file) for file in args.files.split(",")]
 
 
-def get_all_maps(file_map: dict) -> dict:
+def check_map_keys(file_map: dict) -> dict:
     all_maps = {}
+    maps_length = 0
     for maps in file_map.values():
         new_maps = {k: v for k, v in maps.items()}
+        maps_length += len(new_maps)
         all_maps.update(new_maps)
+    if maps_length != len(all_maps):
+        raise RepeatingKeyError
     return all_maps
 
 
@@ -24,23 +75,40 @@ def get_project_maps(file_map: dict, project: str) -> dict:
 
 
 def run_cmd(cmd_list: list):
-    run(cmd_list, shell=False, executable="/bin/bash")
+    run(cmd_list)
 
 
-file_maps = get_project_maps(sc.file_map, "test")
-
-cmd_list = sc.rsync_options
-for paths in file_maps.values():
+def run_rsync(opt: list, lrd: str, filepaths: list, usr: str, host: str):
     run_cmd(
-        [
-            "rsync",
-            "-rtvz",
-            "--progress",
-            "-e",
-            f"'ssh -p {sc.port}'",
-            paths[0],
-            f"{sc.username}@{sc.host}:{paths[2]}",
-        ]
+        ["rsync"] + opt + [path.join(lrd, filepaths[0]), f"{usr}@{host}:{filepaths[1]}"]
     )
 
-run_cmd(cmd_list)
+
+def main():
+    # Check for repeating keys in file map projects
+    try:
+        all_maps = check_map_keys(sc.file_map)
+    except RepeatingKeyError:
+        print(f"File map contains repeating keys!")
+        exit()
+
+    # decide what to sync based on settings
+    if sc.sync_all:
+        for paths in all_maps.values():
+            print(paths)
+            # run_rsync(sc.rsync_options, sc.local_root_dir, paths, sc.username, sc.host)
+    elif sc.project:
+        file_maps = get_project_maps(sc.file_map, sc.project)
+        for paths in file_maps.values():
+            print(paths)
+            # run_rsync(sc.rsync_options, sc.local_root_dir, paths, sc.username, sc.host)
+    elif len(sc.file_keys) > 0:
+        for key in sc.file_keys:
+            print(all_maps[key])
+            # run_rsync(sc.rsync_options, sc.local_root_dir, all_maps[key], sc.username, sc.host)
+    else:
+        raise BadFileSyncDefinition
+
+
+if __name__ == "__main__":
+    main()
