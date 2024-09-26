@@ -90,3 +90,15 @@ file_map = {
         ],
     },
 }
+
+# CLI OUTPUT FORMATTING
+GN = "\033[0;32m"  # green normal
+GB = "\033[1;32m"  # green bold
+RN = "\033[0;31m"  # red normal
+RB = "\033[1;31m"  # red bold
+CN = "\033[0;36m"  # cyan normal
+CB = "\033[1;36m"  # cyan bold
+WU = "\033[4;37m"  # white underline
+BLD = "\033[1m"  # bold
+UND = "\033[4m"  # underline
+RST = "\033[0m"  # reset formatting

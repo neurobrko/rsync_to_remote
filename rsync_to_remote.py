@@ -1,10 +1,26 @@
 #!/usr/bin/env python
 
 import sync_conf as sc
-from subprocess import run
+from subprocess import run, PIPE
 from error_handler import RepeatingKeyError, BadFileSyncDefinition
 import argparse
 from os import path
+import logging
+from time import strftime, sleep
+from pytimedinput import timedKey
+
+# invoke logger
+LOGGER = logging.getLogger()
+# TODO: delete log files older then x days.
+script_root = path.dirname(path.realpath(__file__))
+
+log_filename = f"rsync_to_remote-{strftime('%y%m%d')}.log"
+logging.basicConfig(
+    format="%(levelname)s: [:%(lineno)d] %(message)s",
+    datefmt="%Y-%m-%d:%H:%M:%S",
+    filename=path.join(script_root, "log", log_filename),
+    level=logging.INFO,
+)
 
 # OVERRIDE SETTINGS FOR TESTING
 sc.host = "localhost"
@@ -12,7 +28,7 @@ sc.username = "marpauli"
 sc.port = "22"
 sc.rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {sc.port}"]
 sc.local_root_dir = ""
-# sc.project = "test"
+sc.project = "test"
 
 # set-up arg parser
 ap = argparse.ArgumentParser()
@@ -78,36 +94,113 @@ def run_cmd(cmd_list: list):
     run(cmd_list)
 
 
-def run_rsync(opt: list, lrd: str, filepaths: list, usr: str, host: str):
-    run_cmd(
-        ["rsync"] + opt + [path.join(lrd, filepaths[0]), f"{usr}@{host}:{filepaths[1]}"]
-    )
-
-
-def main():
-    # Check for repeating keys in file map projects
+def run_rsync(filepaths: list, counter: int):
+    print(f"{sc.GN}[{counter}]{sc.RST}")
+    print(f"{sc.CB}local file: {sc.RST}{sc.WU}{filepaths[0]}{sc.RST}")
+    print(f"{sc.CB}remote file: {sc.RST}{sc.WU}{filepaths[1]}{sc.RST}")
+    to_log = f"\n*_* [{counter}] *_*\nsource: {filepaths[0]}\ntarget: {filepaths[1]}\nrsync output:"
     try:
-        all_maps = check_map_keys(sc.file_map)
-    except RepeatingKeyError:
-        print(f"File map contains repeating keys!")
-        exit()
+        output = run(
+            ["rsync"]
+            + sc.rsync_options
+            + [
+                path.join(sc.local_root_dir, filepaths[0]),
+                f"{sc.username}@{sc.host}:{filepaths[1]}",
+            ],
+            stdout=PIPE,
+        ).stdout.decode("utf-8")
+        to_log = "\n".join([to_log, output])
+        LOGGER.info(to_log)
+        counter += 1
+        return counter
+    except Exception as err:
+        print(f"Something went wrong!{err}")
+        to_log = "\n".join([to_log, err])
+    LOGGER.info(to_log)
 
+
+def synchronize_files(all_maps):
     # decide what to sync based on settings
     if sc.sync_all:
         for paths in all_maps.values():
             print(paths)
-            # run_rsync(sc.rsync_options, sc.local_root_dir, paths, sc.username, sc.host)
+            # run_rsync(paths)
     elif sc.project:
         file_maps = get_project_maps(sc.file_map, sc.project)
+        i = 1
         for paths in file_maps.values():
-            print(paths)
-            # run_rsync(sc.rsync_options, sc.local_root_dir, paths, sc.username, sc.host)
+            # print(paths)
+            i = run_rsync(paths, i)
+        return i
+
     elif len(sc.file_keys) > 0:
         for key in sc.file_keys:
             print(all_maps[key])
-            # run_rsync(sc.rsync_options, sc.local_root_dir, all_maps[key], sc.username, sc.host)
+            # run_rsync(all_maps[key])
     else:
         raise BadFileSyncDefinition
+
+
+def main():
+    print("".join([sc.BLD, "> Sync files to remote VM <".center(80, "="), sc.RST]))
+    LOGGER.info("> SYNC START <".center(50, "="))
+    LOGGER.info(f"timestamp: {strftime('%Y-%m-%d %H:%M:%S')}")
+    # Check for repeating keys in file map projects
+    try:
+        all_maps = check_map_keys(sc.file_map)
+        LOGGER.info("File map keys OK!")
+    except RepeatingKeyError:
+        msg = "File map contains repeating keys!"
+        print(msg)
+        LOGGER.error(msg)
+        exit()
+
+    # display info about VM
+    print(f"{sc.BLD}VM IP: {sc.RB}10.0.13.{sc.host_address}{sc.RST}")
+    LOGGER.info(f"VM IP: 10.0.13.{sc.host_address}")
+    print(f"{sc.BLD}ssh: {sc.RB}{sc.host}:{sc.port}{sc.RST}")
+    LOGGER.info(f"ssh: {sc.host}:{sc.port}")
+    print("Fetching remote hostname...")
+    hostname = run(
+        ["ssh", "-p", f"{sc.port}", f"{sc.username}@{sc.host}", "echo", "$HOSTNAME"],
+        stdout=PIPE,
+    ).stdout.decode("utf-8")
+    print(f"{sc.BLD}remote hostname: {sc.RB}{hostname}{sc.RST}")
+    LOGGER.info(f"remote hostname: {hostname.strip()}")
+
+    # give user few seconds to check VM settings
+    # TODO: add countdown
+    user_text, timed_out = timedKey(
+        f"Correct VM? (Wait for {sc.VM_check_timeout} s.) [y/n]: ",
+        timeout=sc.VM_check_timeout,
+        allowCharacters="yYnN",
+    )
+    if timed_out:
+        print("Continue synchronization!")
+        LOGGER.info("VM check: OK! (w/o user interaction)")
+        i = synchronize_files(all_maps)
+    else:
+        if user_text in ["y", "Y"]:
+            LOGGER.info("VM check: OK!")
+            i = synchronize_files(all_maps)
+        else:
+            print("Synchronization canceled. Check WM info.")
+            LOGGER.info("VM check: Synchronization canceled by user.")
+            LOGGER.info("".join(["> SYNC END <".center(50, "="), "\n\n"]))
+            exit()
+
+    print(f"{sc.BLD}Synced file(s) count: {sc.RST}{sc.RB}{i-1}{sc.RST}")
+    LOGGER.info(f"\nSynced file(s) count: {i-1}")
+    LOGGER.info("".join(["> SYNC END <".center(50, "="), "\n\n"]))
+
+    for x in range(sc.result_timeout):
+        print(
+            f"{sc.RB}Press Ctrl+C to exit or script will exit in: {(sc.result_timeout - x)} s...{sc.RST}",
+            end=" \r",
+        )
+        sleep(1)
+    print(f"{sc.GB}GoodBye!{sc.RST}", " " * 70)
+    sleep(1)
 
 
 if __name__ == "__main__":
