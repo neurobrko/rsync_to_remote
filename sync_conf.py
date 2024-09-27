@@ -22,7 +22,7 @@ file_keys = [99]
 # INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
 
 # FILE MAPPING
-# dict = {"project": {num: ["local_source", "remote_target"]}}
+# dict = {"project": {num: ["source", "target"]}}
 # WARNING: num MUST be unique!
 file_map = {
     "test": {
@@ -87,6 +87,12 @@ file_map = {
         12: [
             "core/simple_core/core_driver/servers/utils.py",
             "/var/local/virl2/.local/lib/python3.12/site-packages/simple_core/core_driver/servers/utils.py",
+        ],
+    },
+    "OVA": {
+        13: [
+            "/home/marpauli/code/cisco/fix_OVA/fix_OVA.py",
+            "/home/marpauli/fix_OVA.py",
         ],
     },
 }
