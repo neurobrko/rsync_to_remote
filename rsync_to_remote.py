@@ -17,7 +17,7 @@ script_root = path.dirname(path.realpath(__file__))
 log_filename = f"rsync_to_remote-{strftime('%y%m%d')}.log"
 logging.basicConfig(
     format="%(levelname)s: [:%(lineno)d] %(message)s",
-    datefmt="%Y-%m-%d:%H:%M:%S",
+    datefmt=sc.date_format,
     filename=path.join(script_root, "log", log_filename),
     level=logging.INFO,
 )
@@ -39,10 +39,8 @@ ap.add_argument("-u", "--username", help="Remote username")
 ap.add_argument("-ha", "--host_address", help="Host address part of IP")
 ap.add_argument("-s", "--ssh_port", help="SSH port")
 ap.add_argument("-l", "--local_root_dir", help="Root directory for source files")
-ap.add_argument("-vt", "--vm_timeout", help="Timeout to check VM info", type=int)
-ap.add_argument(
-    "-rt", "--result_timeout", help="Timeout to check script output", type=int
-)
+ap.add_argument("-vt", "--vm_timeout", help="Timeout to check VM info")
+ap.add_argument("-rt", "--result_timeout", help="Timeout to check script output")
 ap.add_argument(
     "-a", "--sync_all", help="Sync all files from all projects", action="store_true"
 )
@@ -65,9 +63,9 @@ if args.ssh_port:
 if args.local_root_dir:
     sc.local_root_dir = args.local_root_dir
 if args.vm_timeout:
-    sc.VM_check_timeout = args.vm_timeoout
+    sc.VM_check_timeout = int(args.vm_timeout)
 if args.result_timeout:
-    sc.result_timeout = args.result_timeout
+    sc.result_timeout = int(args.result_timeout)
 if args.sync_all:
     sc.sync_all = True
 if args.project:
@@ -172,35 +170,39 @@ def main():
 
     # give user few seconds to check VM settings
     # TODO: add countdown
-    user_text, timed_out = timedKey(
-        f"Correct VM? (Wait for {sc.VM_check_timeout} s.) [y/n]: ",
-        timeout=sc.VM_check_timeout,
-        allowCharacters="yYnN",
-    )
-    if timed_out:
-        print("Continue synchronization!")
-        LOGGER.info("VM check: OK! (w/o user interaction)")
-        i = synchronize_files(all_maps)
-    else:
-        if user_text in ["y", "Y"]:
-            LOGGER.info("VM check: OK!")
+    if sc.VM_check_timeout:
+        user_text, timed_out = timedKey(
+            f"Correct VM? (Wait for {sc.VM_check_timeout} s.) [y/n]: ",
+            timeout=sc.VM_check_timeout,
+            allowCharacters="yYnN",
+        )
+        if timed_out:
+            print("Continue synchronization!")
+            LOGGER.info("VM check: OK! (w/o user interaction)")
             i = synchronize_files(all_maps)
         else:
-            print("Synchronization canceled. Check WM info.")
-            LOGGER.info("VM check: Synchronization canceled by user.")
-            LOGGER.info("".join(["> SYNC END <".center(50, "="), "\n\n"]))
-            exit()
+            if user_text in ["y", "Y"]:
+                LOGGER.info("VM check: OK!")
+                i = synchronize_files(all_maps)
+            else:
+                print("Synchronization canceled. Check WM info.")
+                LOGGER.info("VM check: Synchronization canceled by user.")
+                LOGGER.info("".join(["> SYNC END <".center(50, "="), "\n\n"]))
+                exit()
+    else:
+        i = synchronize_files(all_maps)
 
     print(f"{sc.BLD}Synced file(s) count: {sc.RST}{sc.RB}{i-1}{sc.RST}")
     LOGGER.info(f"\nSynced file(s) count: {i-1}")
     LOGGER.info("".join(["> SYNC END <".center(50, "="), "\n\n"]))
 
-    for x in range(sc.result_timeout):
-        print(
-            f"{sc.RB}Press Ctrl+C to exit or script will exit in: {(sc.result_timeout - x)} s...{sc.RST}",
-            end=" \r",
-        )
-        sleep(1)
+    if sc.result_timeout:
+        for x in range(sc.result_timeout):
+            print(
+                f"{sc.RB}Press Ctrl+C to exit or script will exit in: {(sc.result_timeout - x)} s...{sc.RST}",
+                end=" \r",
+            )
+            sleep(1)
     print(f"{sc.GB}GoodBye!{sc.RST}", " " * 70)
     sleep(1)
 
