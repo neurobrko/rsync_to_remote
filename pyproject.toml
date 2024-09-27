@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.12"
 setuptools = "^75.1.0"
 pytimedinput = "^2.0.1"
+pysimplegui-4-foss = "^4.60.4.1"
 
 
 [build-system]
