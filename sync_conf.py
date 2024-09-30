@@ -2,7 +2,8 @@
 host = "10.122.58.49"
 username = "root"
 host_address = "138"
-port = f"13{host_address}"
+# port = f"13{host_address}"
+port = "13138"
 rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {port}"]
 local_root_dir = "/home/marpauli/code/cisco/_SIMPLE/"
 
@@ -17,7 +18,7 @@ sync_all = False
 project = None
 # LIST OF FILES TO SYNC
 # WARNING: Must be list even with single item!
-file_keys = [99, 98]
+file_keys = [1, 2]
 
 # INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
 
@@ -94,6 +95,12 @@ file_map = {
             "/home/marpauli/code/cisco/fix_OVA/fix_OVA.py",
             "/home/marpauli/fix_OVA.py",
         ],
+    },
+    "5034": {
+        14: [
+            "core/simple_core/system_admin/driver/builtin_driver.py",
+            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_core/system_admin/driver/builtin_driver.py",
+        ]
     },
 }
 

@@ -25,12 +25,12 @@ logging.basicConfig(
 # TODO: add dict for rsync settings to use it as set of rules invoked by dict key
 # TODO: add GUI for changing sync_conf
 # OVERRIDE SETTINGS FOR TESTING
-sc.host = "localhost"
-sc.username = "marpauli"
-sc.port = "22"
-sc.rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {sc.port}"]
-sc.local_root_dir = ""
-sc.project = "test"
+# sc.host = "localhost"
+# sc.username = "marpauli"
+# sc.port = "22"
+# sc.rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {sc.port}"]
+# sc.local_root_dir = ""
+# sc.project = "test"
 
 # set-up arg parser
 ap = argparse.ArgumentParser()
@@ -60,6 +60,8 @@ if args.host_address:
     sc.host_address = args.host_address
 if args.ssh_port:
     sc.port = args.ssh_port
+    # if port is specified in CLI, alter rsync_options!
+    sc.rsync_options[-1] = f"ssh -p {sc.port}"
 if args.local_root_dir:
     sc.local_root_dir = args.local_root_dir
 if args.vm_timeout:
@@ -122,9 +124,10 @@ def run_rsync(filepaths: list, counter: int):
 def synchronize_files(all_maps):
     # decide what to sync based on settings
     if sc.sync_all:
+        i = 1
         for paths in all_maps.values():
-            print(paths)
-            # run_rsync(paths)
+            i = run_rsync(paths, i)
+        return i
     elif sc.project:
         file_maps = get_project_maps(sc.file_map, sc.project)
         i = 1
@@ -132,11 +135,11 @@ def synchronize_files(all_maps):
             # print(paths)
             i = run_rsync(paths, i)
         return i
-
     elif len(sc.file_keys) > 0:
+        i = 1
         for key in sc.file_keys:
-            print(all_maps[key])
-            # run_rsync(all_maps[key])
+            i = run_rsync(all_maps[key], i)
+        return i
     else:
         raise BadFileSyncDefinition
 
