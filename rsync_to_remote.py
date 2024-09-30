@@ -23,14 +23,14 @@ logging.basicConfig(
 )
 
 # TODO: add dict for rsync settings to use it as set of rules invoked by dict key
-# TODO: maybe add interactive mode for changing settings afters launch in terminal
+# TODO: add GUI for changing sync_conf
 # OVERRIDE SETTINGS FOR TESTING
 sc.host = "localhost"
 sc.username = "marpauli"
 sc.port = "22"
 sc.rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {sc.port}"]
 sc.local_root_dir = ""
-sc.project = "OVA"
+sc.project = "test"
 
 # set-up arg parser
 ap = argparse.ArgumentParser()

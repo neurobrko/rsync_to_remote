@@ -17,7 +17,7 @@ sync_all = False
 project = None
 # LIST OF FILES TO SYNC
 # WARNING: Must be list even with single item!
-file_keys = [99]
+file_keys = [99, 98]
 
 # INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
 
