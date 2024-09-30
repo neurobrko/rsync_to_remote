@@ -5,6 +5,7 @@ import sync_conf as sc
 from error_handler import WrongConfiguration, NoChangeToConfig
 import re
 from os import path
+from subprocess import run, PIPE
 
 # THIS WILL BE GUI FOR CONFIGURING BEHAVIOUR OF rsync_to_VM.py
 # EITHER ONE-TIME BY RUNNING IT WITH CLI ARGUMENTS
@@ -34,7 +35,7 @@ def validate_changes(vals):
             raise WrongConfiguration("Invalid username!")
 
         changed_values["username = "] = [
-            f"username = \"{vals['-USERNAME-']}\n",
+            f"username = \"{vals['-USERNAME-']}\"",
             "-u",
             vals["-USERNAME-"],
         ]
@@ -59,20 +60,19 @@ def validate_changes(vals):
             vals["-PORT-"],
         ]
     # specifying -e option is kind of a brute force, but working for this case
+    # TODO: FIX rsync_option parsing
     if vals["-RSYNC-OPT-"] != " ".join(sc.rsync_options):
         try:
             options = vals["-RSYNC-OPT-"].split()
-            print(options)
             e_index = options.index("-e")
             del options[e_index : e_index + 4]
-            print(options)
         except:
             raise WrongConfiguration("Invalid rsync arguments!")
         changed_values["rsync_options ="] = [
             'rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {port}"]',
         ]
     if vals["-LRD-"] != sc.local_root_dir:
-        if not path.exists(vals["-LRD"]):
+        if not path.exists(vals["-LRD-"]):
             raise WrongConfiguration("Invalid path to local root directory!")
         changed_values["local_root_dir ="] = [
             f"local_root_dir = \"{vals['-LRD-']}\"",
@@ -104,12 +104,12 @@ def validate_changes(vals):
         changed_values["date_format ="] = [f"date_format = \"{vals['-DTF-']}\""]
 
     if vals["-SYNC-ALL-"] != sc.sync_all:
-        if type(vals["-SYNC_ALL-"]) != bool:
+        if type(vals["-SYNC-ALL-"]) != bool:
             raise WrongConfiguration("Something went horribly wrong with checkbox!")
         changed_values["sync_all ="] = [
-            f"sync_all = {vals['-SYNC_ALL-']}",
+            f"sync_all = {vals['-SYNC-ALL-']}",
             "-l",
-            vals["-SYNC_ALL-"],
+            vals["-SYNC-ALL-"],
         ]
     if vals["-PROJECT-"] == "---":
         option = None
@@ -129,6 +129,7 @@ def validate_changes(vals):
                 "-p",
                 vals["-PROJECT-"],
             ]
+    err = ""
     try:
         map_keys = []
         for mapa in sc.file_map.values():
@@ -136,10 +137,18 @@ def validate_changes(vals):
         if (new_keys := [int(key) for key in vals["-KEYS-"].split()]) != sc.file_keys:
             for key in new_keys:
                 if key not in map_keys:
-                    raise WrongConfiguration("Supplied key not in file map!")
+                    err = "Supplied key not in file map!"
+                    raise WrongConfiguration(err)
+            changed_values["file_keys ="] = [
+                f"file_keys = {new_keys}",
+                "-f",
+                ", ".join([str(key) for key in new_keys]),
+            ]
 
     except:
-        raise WrongConfiguration("Invalid file keys!")
+        if not err:
+            err = "Invalid file keys!"
+        raise WrongConfiguration(err)
     return changed_values
 
 
@@ -148,6 +157,16 @@ def update_conf(values):
     changes = validate_changes(values)
     if len(changes) == 0:
         raise NoChangeToConfig("There were no changes in configuration!")
+    with open("sync_conf.py", "r") as file:
+        lines = file.readlines()
+
+    for change, values in changes.items():
+        for i, line in enumerate(lines):
+            if change in line:
+                lines[i] = f"{values[0]}\n"
+
+    with open("sync_conf.py", "w") as file:
+        file.writelines(lines)
     return changes
 
 
@@ -283,7 +302,7 @@ def main():
             print("Update")
             # update sync_conf, but do not run
             changes = update_conf(values)
-            print(changes.keys())
+            print(changes)
             break
         elif event == "Update conf & Run":
             print("Update & Run")
@@ -316,7 +335,8 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"\033[1;31m{type(e).__name__}:\033[0m {e}")
+    # try:
+    #     main()
+    # except Exception as e:
+    #     print(f"\033[1;31m{type(e).__name__}:\033[0m {e}")
+    main()
