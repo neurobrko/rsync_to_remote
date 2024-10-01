@@ -8,8 +8,9 @@ rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {port}"]
 local_root_dir = "/home/marpauli/code/cisco/_SIMPLE/"
 
 # SCRIPT SETTINGS
-VM_check_timeout = 3  # set 0 to skip check
-result_timeout = 10  # set 0 to skip end result check
+# set 0 to skip check
+VM_check_timeout = 3
+result_timeout = 10
 date_format = "%Y-%m-%d %H:%M:%S"
 
 # SYNC ALL FILES IN <file_map>

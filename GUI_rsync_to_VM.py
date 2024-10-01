@@ -17,12 +17,13 @@ def validate_changes(vals):
     changed_values = {}
 
     if vals["-HOST-"] != sc.host:
-        if len(host_ip := vals["-HOST-"].split(".")) != 4:
-            raise WrongConfiguration("Invalid Host IP!")
-        try:
-            [int(add) for add in host_ip]
-        except:
-            raise WrongConfiguration("Invalid Host IP!")
+        if vals["-HOST-"] != "localhost":
+            if len(host_ip := vals["-HOST-"].split(".")) != 4:
+                raise WrongConfiguration("Invalid Host!")
+            try:
+                [int(add) for add in host_ip]
+            except:
+                raise WrongConfiguration("Invalid Host!")
 
         changed_values["host = "] = [
             f"host = \"{vals['-HOST-']}\"",
@@ -65,11 +66,18 @@ def validate_changes(vals):
         try:
             options = vals["-RSYNC-OPT-"].split()
             e_index = options.index("-e")
+            print(options)
             del options[e_index : e_index + 4]
+            rsync_options = "["
+            for opt in options:
+                rsync_options = rsync_options + f'"{opt}", '
+            rsync_options = rsync_options + '"-e", f"ssh -p {port}"]'
+            print(rsync_options)
+
         except:
             raise WrongConfiguration("Invalid rsync arguments!")
         changed_values["rsync_options ="] = [
-            'rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {port}"]',
+            f"rsync_options = {rsync_options}",
         ]
     if vals["-LRD-"] != sc.local_root_dir:
         if not path.exists(vals["-LRD-"]):
@@ -142,7 +150,7 @@ def validate_changes(vals):
             changed_values["file_keys ="] = [
                 f"file_keys = {new_keys}",
                 "-f",
-                ", ".join([str(key) for key in new_keys]),
+                ",".join([str(key) for key in new_keys]),
             ]
 
     except:
@@ -162,12 +170,17 @@ def update_conf(values):
 
     for change, values in changes.items():
         for i, line in enumerate(lines):
-            if change in line:
+            if change in line and "#" not in line:
                 lines[i] = f"{values[0]}\n"
 
     with open("sync_conf.py", "w") as file:
         file.writelines(lines)
     return changes
+
+
+def run_rtr(values):
+    """Run rsync_to_remote.py with modified arguments"""
+    pass
 
 
 # set theme for GUI
@@ -295,14 +308,13 @@ def main():
             break
         elif event == "Run":
             print("Run")
+            run_rtr(values)
             pass
             # run the command with cli arguments based on changes
             break
         elif event == "Update conf":
-            print("Update")
             # update sync_conf, but do not run
-            changes = update_conf(values)
-            print(changes)
+            update_conf(values)
             break
         elif event == "Update conf & Run":
             print("Update & Run")
@@ -335,8 +347,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # try:
-    #     main()
-    # except Exception as e:
-    #     print(f"\033[1;31m{type(e).__name__}:\033[0m {e}")
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"\033[1;31m{type(e).__name__}:\033[0m {e}")
