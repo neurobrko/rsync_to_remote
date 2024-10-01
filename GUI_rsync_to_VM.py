@@ -16,6 +16,13 @@ conf_file = path.join(script_root, "sync_conf.py")
 rsync_file = path.join(script_root, "rsync_to_remote.py")
 
 
+def get_map_keys(file_map):
+    map_keys = []
+    for mapa in sc.file_map.values():
+        map_keys += [k for k in mapa.keys()]
+    return map_keys
+
+
 def validate_changes(vals):
     """Get changed values and validate them"""
     changed_values = {}
@@ -142,9 +149,7 @@ def validate_changes(vals):
             ]
     err = ""
     try:
-        map_keys = []
-        for mapa in sc.file_map.values():
-            map_keys += [k for k in mapa.keys()]
+        map_keys = get_map_keys(sc.file_map)
         if (new_keys := [int(key) for key in vals["-KEYS-"].split()]) != sc.file_keys:
             for key in new_keys:
                 if key not in map_keys:

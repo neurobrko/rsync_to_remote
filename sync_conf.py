@@ -104,6 +104,8 @@ file_map = {
         ]
     },
 }
+# <> MAP ENDPOINT <>
+# DO NOT DELETE ABOVE LINE!
 
 # CLI OUTPUT FORMATTING
 GN = "\033[0;32m"  # green normal
