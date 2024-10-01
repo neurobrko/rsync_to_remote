@@ -1,22 +1,22 @@
 # RSYNC SETTINGS
 host = "10.122.58.49"
 username = "root"
-host_address = "138"
+host_address = "64"
 # port = f"13{host_address}"
-port = "13138"
+port = "13064"
 rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {port}"]
 local_root_dir = "/home/marpauli/code/cisco/_SIMPLE/"
 
 # SCRIPT SETTINGS
 # set 0 to skip check
-VM_check_timeout = 3
-result_timeout = 10
+VM_check_timeout = 0
+result_timeout = 0
 date_format = "%Y-%m-%d %H:%M:%S"
 
 # SYNC ALL FILES IN <file_map>
 sync_all = False
 # SYNC ALL FILES FROM SPECIFIED PROJECT
-project = None
+project = "5034"
 # LIST OF FILES TO SYNC
 # WARNING: Must be list even with single item!
 file_keys = [1, 2]

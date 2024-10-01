@@ -22,8 +22,8 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-# TODO: add dict for rsync settings to use it as set of rules invoked by dict key
-# TODO: add GUI for changing sync_conf
+# TODO: think about adding dict for rsync settings to use it as set of rules invoked by dict key. \
+#  It would probably mean seriously rebuilding this script and GUI...
 # OVERRIDE SETTINGS FOR TESTING
 # sc.host = "localhost"
 # sc.username = "marpauli"

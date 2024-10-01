@@ -11,6 +11,10 @@ from subprocess import run, PIPE
 # EITHER ONE-TIME BY RUNNING IT WITH CLI ARGUMENTS
 # OR PERMANENTLY (UNTIL NEXT CONFIG) BY CHANGING sync_conf.py
 
+script_root = path.dirname(path.realpath(__file__))
+conf_file = path.join(script_root, "sync_conf.py")
+rsync_file = path.join(script_root, "rsync_to_remote.py")
+
 
 def validate_changes(vals):
     """Get changed values and validate them"""
@@ -27,7 +31,7 @@ def validate_changes(vals):
 
         changed_values["host = "] = [
             f"host = \"{vals['-HOST-']}\"",
-            "-h",
+            "-r",
             vals["-HOST-"],
         ]
     if vals["-USERNAME-"] != sc.username:
@@ -66,13 +70,11 @@ def validate_changes(vals):
         try:
             options = vals["-RSYNC-OPT-"].split()
             e_index = options.index("-e")
-            print(options)
             del options[e_index : e_index + 4]
             rsync_options = "["
             for opt in options:
                 rsync_options = rsync_options + f'"{opt}", '
             rsync_options = rsync_options + '"-e", f"ssh -p {port}"]'
-            print(rsync_options)
 
         except:
             raise WrongConfiguration("Invalid rsync arguments!")
@@ -80,13 +82,14 @@ def validate_changes(vals):
             f"rsync_options = {rsync_options}",
         ]
     if vals["-LRD-"] != sc.local_root_dir:
-        if not path.exists(vals["-LRD-"]):
+        if path.exists(vals["-LRD-"]) or vals["-LRD-"] == "":
+            changed_values["local_root_dir ="] = [
+                f"local_root_dir = \"{vals['-LRD-']}\"",
+                "-l",
+                vals["-LRD-"],
+            ]
+        else:
             raise WrongConfiguration("Invalid path to local root directory!")
-        changed_values["local_root_dir ="] = [
-            f"local_root_dir = \"{vals['-LRD-']}\"",
-            "-l",
-            vals["-LRD-"],
-        ]
     if int(vals["-VCT-"]) != sc.VM_check_timeout:
         try:
             int(vals["-VCT-"])
@@ -165,7 +168,7 @@ def update_conf(values):
     changes = validate_changes(values)
     if len(changes) == 0:
         raise NoChangeToConfig("There were no changes in configuration!")
-    with open("sync_conf.py", "r") as file:
+    with open(conf_file, "r") as file:
         lines = file.readlines()
 
     for change, values in changes.items():
@@ -173,14 +176,27 @@ def update_conf(values):
             if change in line and "#" not in line:
                 lines[i] = f"{values[0]}\n"
 
-    with open("sync_conf.py", "w") as file:
+    with open(conf_file, "w") as file:
         file.writelines(lines)
     return changes
 
 
-def run_rtr(values):
-    """Run rsync_to_remote.py with modified arguments"""
-    pass
+def get_cmd_list(values):
+    """
+    Return list od arguments for subprocess.run()
+    to run rsync_to_remote.py with modified arguments
+    """
+    changes = validate_changes(values)
+    cmd_list = [
+        "/home/marpauli/.cache/pypoetry/virtualenvs/rsync-to-vm-yQGWRMhR-py3.12/bin/python",
+        rsync_file,
+    ]
+    for k, vals in changes.items():
+        if k == "rsync_options =":
+            continue
+        cmd_list = cmd_list + vals[1:3]
+
+    return cmd_list
 
 
 # set theme for GUI
@@ -242,6 +258,18 @@ layout = [
     [
         sg.Column(
             config_line("rsync options:", " ".join(sc.rsync_options), "-RSYNC-OPT-")
+        )
+    ],
+    [
+        sg.Column(
+            [
+                [
+                    sg.Text(
+                        "WARNING! rsync options are ignored when running w/o update conf! (TODO)",
+                        text_color="yellow",
+                    )
+                ]
+            ]
         )
     ],
     [sg.Column(config_line("local root dir:", sc.local_root_dir, "-LRD-"))],
@@ -307,17 +335,18 @@ def main():
         if event in ("Exit", sg.WIN_CLOSED):
             break
         elif event == "Run":
-            print("Run")
-            run_rtr(values)
-            pass
+            cmd_list = get_cmd_list(values)
             # run the command with cli arguments based on changes
+            run(cmd_list)
             break
         elif event == "Update conf":
             # update sync_conf, but do not run
             update_conf(values)
+            print(f"\033[1;32mConfiguration successfully updated!\033[0m")
             break
         elif event == "Update conf & Run":
             print("Update & Run")
+            print(values)
             # update sync_conf and run
             break
         elif event in list(fields.keys()):
