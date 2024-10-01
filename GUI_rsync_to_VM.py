@@ -327,7 +327,7 @@ layout = [
 
 def main():
     # Create window
-    window = sg.Window("Configure rsync_to_VM.py", layout)
+    window = sg.Window("Configure rsync_to_remote.py", layout)
     # Create an event loop
     while True:
         event, values = window.read()
