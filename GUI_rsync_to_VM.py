@@ -335,8 +335,8 @@ def main():
         if event in ("Exit", sg.WIN_CLOSED):
             break
         elif event == "Run":
-            cmd_list = get_cmd_list(values)
             # run the command with cli arguments based on changes
+            cmd_list = get_cmd_list(values)
             run(cmd_list)
             break
         elif event == "Update conf":
@@ -345,9 +345,15 @@ def main():
             print(f"\033[1;32mConfiguration successfully updated!\033[0m")
             break
         elif event == "Update conf & Run":
-            print("Update & Run")
-            print(values)
-            # update sync_conf and run
+            # update sync_conf
+            update_conf(values)
+            # run using new settings
+            run(
+                [
+                    "/home/marpauli/.cache/pypoetry/virtualenvs/rsync-to-vm-yQGWRMhR-py3.12/bin/python",
+                    rsync_file,
+                ]
+            )
             break
         elif event in list(fields.keys()):
             if fields[event] != values[event]:

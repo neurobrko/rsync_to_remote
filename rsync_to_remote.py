@@ -159,9 +159,7 @@ def main():
         exit()
 
     # display info about VM
-    print(f"{sc.BLD}VM IP: {sc.RB}10.0.13.{sc.host_address}{sc.RST}")
-    LOGGER.info(f"VM IP: 10.0.13.{sc.host_address}")
-    print(f"{sc.BLD}ssh: {sc.RB}{sc.host}:{sc.port}{sc.RST}")
+    print(f"{sc.BLD}ssh: {sc.RB}{sc.username}@{sc.host}:{sc.port}{sc.RST}")
     LOGGER.info(f"ssh: {sc.host}:{sc.port}")
     print("Fetching remote hostname...")
     hostname = run(
