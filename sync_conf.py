@@ -1,11 +1,15 @@
 # RSYNC SETTINGS
 host = "10.122.58.49"
 username = "root"
-host_address = "64"
+host_address = "117"
 # port = f"13{host_address}"
-port = "13064"
+port = "13117"
 rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {port}"]
-local_root_dir = "/home/marpauli/code/cisco/_SIMPLE/"
+local_root_dir = "/home/marpauli/code/cisco/_SIMPLE"
+
+# Specify dir to start browsing from
+# local_root_dir is used if empty, if LRD empty GUI uses script dir
+default_dir = ""
 
 # SCRIPT SETTINGS
 # set 0 to skip check
@@ -16,96 +20,11 @@ date_format = "%Y-%m-%d %H:%M:%S"
 # SYNC ALL FILES IN <file_map>
 sync_all = False
 # SYNC ALL FILES FROM SPECIFIED PROJECT
-project = "5034"
+project = None
 # LIST OF FILES TO SYNC
 # WARNING: Must be list even with single item!
-file_keys = [1, 2]
-
+file_keys = []
 # INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
-
-# FILE MAPPING
-# dict = {"project": {num: ["source", "target"]}}
-# WARNING: num MUST be unique!
-file_map = {
-    "test": {
-        99: [
-            "/home/marpauli/code/cisco/rsync_to_VM/test_rsync/src/test.txt",
-            "/home/marpauli/code/cisco/rsync_to_VM/test_rsync/trg/test.txt",
-        ],
-        98: [
-            "/home/marpauli/code/cisco/rsync_to_VM/test_rsync/src/source.txt",
-            "/home/marpauli/code/cisco/rsync_to_VM/test_rsync/trg/source.txt",
-        ],
-    },
-    "6930": {
-        1: [
-            "drivers/runtime/lvm_maximize_root_volume.py",
-            "/usr/local/bin/lvm-maximize-root-volume.py",
-        ],
-        2: [
-            "drivers/runtime/systemd-services/virl2-initial-setup.py",
-            "/usr/local/bin/virl2-initial-setup.py",
-        ],
-    },
-    "6931": {
-        3: [
-            "drivers/simple_drivers/low_level_driver/host_statistics.py",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_drivers/low_level_driver/host_statistics.py",
-        ],
-        4: [
-            "drivers/simple_drivers/low_level_driver/accessors/grpc_lld_accessor.py",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_drivers/low_level_driver/accessors/grpc_lld_accessor.py",
-        ],
-        5: [
-            "core/simple_core/controller/events.py",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_core/controller/events.py",
-        ],
-    },
-    "6961": {
-        6: [
-            "simple_ui/simple_ui/http_handlers.py",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_ui/http_handlers.py",
-        ],
-        7: [
-            "packaging/CONFIG/nginx/controller.conf",
-            "/etc/nginx/conf.d/controller.conf",
-        ],
-        8: [
-            "simple_ui/simple_ui/swagger/api_disk_images.yaml",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_ui/swagger/api_disk_images.yaml",
-        ],
-        9: [
-            "core/simple_core/core_driver/accessors/base_driver_accessor.py",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_core/core_driver/accessors/base_driver_accessor.py",
-        ],
-        10: [
-            "simple_ui/simple_ui/exception_handling.py",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_ui/exception_handling.py",
-        ],
-        11: [
-            "core/simple_core/node_definitions/image_definitions/image_definition_manager.py",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_core/node_definitions/image_definitions/image_definition_manager.py",
-        ],
-        12: [
-            "core/simple_core/core_driver/servers/utils.py",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_core/core_driver/servers/utils.py",
-        ],
-    },
-    "OVA": {
-        13: [
-            "/home/marpauli/code/cisco/fix_OVA/fix_OVA.py",
-            "/home/marpauli/fix_OVA.py",
-        ],
-    },
-    "5034": {
-        14: [
-            "core/simple_core/system_admin/driver/builtin_driver.py",
-            "/var/local/virl2/.local/lib/python3.12/site-packages/simple_core/system_admin/driver/builtin_driver.py",
-        ]
-    },
-}
-# <> MAP ENDPOINT <>
-# DO NOT DELETE ABOVE LINE!
 
 # CLI OUTPUT FORMATTING
 GN = "\033[0;32m"  # green normal

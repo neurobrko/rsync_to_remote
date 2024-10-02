@@ -1,0 +1,7 @@
+test:
+  98:
+  - /home/marpauli/code/cisco/rsync_to_VM/test_rsync/src/source.txt
+  - /home/marpauli/code/cisco/rsync_to_VM/test_rsync/trg/source.txt
+  99:
+  - /home/marpauli/code/cisco/rsync_to_VM/test_rsync/src/test.txt
+  - /home/marpauli/code/cisco/rsync_to_VM/test_rsync/trg/test.txt

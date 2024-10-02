@@ -4,8 +4,9 @@ import PySimpleGUI as sg
 import sync_conf as sc
 from error_handler import WrongConfiguration, NoChangeToConfig
 import re
-from os import path
-from subprocess import run, PIPE
+from os import path, chdir
+from subprocess import run
+import yaml
 
 # THIS WILL BE GUI FOR CONFIGURING BEHAVIOUR OF rsync_to_VM.py
 # EITHER ONE-TIME BY RUNNING IT WITH CLI ARGUMENTS
@@ -14,16 +15,22 @@ from subprocess import run, PIPE
 script_root = path.dirname(path.realpath(__file__))
 conf_file = path.join(script_root, "sync_conf.py")
 rsync_file = path.join(script_root, "rsync_to_remote.py")
+yaml_file = path.join(script_root, "file_map.yaml")
+icon_file = path.join(script_root, "icons/settings.png")
+
+with open(yaml_file, "r") as f:
+    file_map = yaml.safe_load(f)
 
 
-def get_map_keys(file_map):
+def get_map_keys(filemap):
     map_keys = []
-    for mapa in sc.file_map.values():
+    for mapa in filemap.values():
         map_keys += [k for k in mapa.keys()]
     return map_keys
 
 
 def validate_changes(vals):
+    # TODO: make changes just print error in window, not raise error and break
     """Get changed values and validate them"""
     changed_values = {}
 
@@ -149,7 +156,7 @@ def validate_changes(vals):
             ]
     err = ""
     try:
-        map_keys = get_map_keys(sc.file_map)
+        map_keys = get_map_keys(file_map)
         if (new_keys := [int(key) for key in vals["-KEYS-"].split()]) != sc.file_keys:
             for key in new_keys:
                 if key not in map_keys:
@@ -277,8 +284,24 @@ layout = [
             ]
         )
     ],
-    [sg.Column(config_line("local root dir:", sc.local_root_dir, "-LRD-"))],
-    # TODO: Add FolderBrowse Button
+    [
+        sg.Column(
+            [
+                [sg.Text("local root dir:")],
+                [
+                    sg.InputText(
+                        size=(68, 1),
+                        key="-LRD-",
+                        default_text=sc.local_root_dir,
+                        enable_events=True,
+                        text_color=DEFTC,
+                    ),
+                    sg.Push(),
+                    sg.FolderBrowse(target="-LRD-"),
+                ],
+            ]
+        )
+    ],
     [
         sg.Column(config_line("VM check timeout:", sc.VM_check_timeout, "-VCT-", 20)),
         sg.Column(config_line("Result check timeout:", sc.result_timeout, "-RCT-", 20)),
@@ -296,7 +319,7 @@ layout = [
                     ),
                     sg.Text("Synchronize project:"),
                     sg.Combo(
-                        ["---"] + list(sc.file_map.keys()),
+                        ["---"] + list(file_map.keys()),
                         default_value=opt_def_val,
                         key="-PROJECT-",
                         enable_events=True,
@@ -331,8 +354,13 @@ layout = [
 
 
 def main():
+    # change dir for FileBrowse()
+    if path.exists(sc.default_dir):
+        chdir(sc.default_dir)
+    elif path.exists(sc.local_root_dir):
+        chdir(sc.local_root_dir)
     # Create window
-    window = sg.Window("Configure rsync_to_remote.py", layout)
+    window = sg.Window("Configure rsync_to_remote.py", layout, icon=icon_file)
     # Create an event loop
     while True:
         event, values = window.read()

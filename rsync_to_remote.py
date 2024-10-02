@@ -8,6 +8,7 @@ from os import path
 import logging
 from time import strftime, sleep
 from pytimedinput import timedKey
+import yaml
 
 # invoke logger
 LOGGER = logging.getLogger()
@@ -75,11 +76,16 @@ if args.project:
 if args.files:
     sc.file_keys = [int(file) for file in args.files.split(",")]
 
+yaml_file = path.join(script_root, "file_map.yaml")
 
-def check_map_keys(file_map: dict) -> dict:
+with open(yaml_file, "r") as f:
+    file_map = yaml.safe_load(f)
+
+
+def check_map_keys(filemap: dict) -> dict:
     all_maps = {}
     maps_length = 0
-    for maps in file_map.values():
+    for maps in filemap.values():
         new_maps = {k: v for k, v in maps.items()}
         maps_length += len(new_maps)
         all_maps.update(new_maps)
@@ -88,8 +94,8 @@ def check_map_keys(file_map: dict) -> dict:
     return all_maps
 
 
-def get_project_maps(file_map: dict, project: str) -> dict:
-    return file_map[project]
+def get_project_maps(filemap: dict, project: str) -> dict:
+    return filemap[project]
 
 
 def run_cmd(cmd_list: list):
@@ -129,7 +135,7 @@ def synchronize_files(all_maps):
             i = run_rsync(paths, i)
         return i
     elif sc.project:
-        file_maps = get_project_maps(sc.file_map, sc.project)
+        file_maps = get_project_maps(file_map, sc.project)
         i = 1
         for paths in file_maps.values():
             # print(paths)
@@ -150,7 +156,7 @@ def main():
     LOGGER.info(f"timestamp: {strftime('%Y-%m-%d %H:%M:%S')}")
     # Check for repeating keys in file map projects
     try:
-        all_maps = check_map_keys(sc.file_map)
+        all_maps = check_map_keys(file_map)
         LOGGER.info("File map keys OK!")
     except RepeatingKeyError:
         msg = "File map contains repeating keys!"
