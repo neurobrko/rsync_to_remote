@@ -199,6 +199,7 @@ def main():
                 window[event].update(text_color=DEFTC)
         if event == "Get target":
             window["-ERROR-FIELD-"].update("")
+            window.refresh()
             if (
                 values["-HOST-"] != host
                 or values["-USER-"] != username
