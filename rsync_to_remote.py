@@ -4,7 +4,7 @@ import sync_conf as sc
 from subprocess import run, PIPE
 from error_handler import RepeatingKeyError, BadFileSyncDefinition
 import argparse
-from os import path
+from os import path, mkdir
 import logging
 from time import strftime, sleep
 from pytimedinput import timedKey
@@ -16,10 +16,16 @@ LOGGER = logging.getLogger()
 script_root = path.dirname(path.realpath(__file__))
 
 log_filename = f"rsync_to_remote-{strftime('%y%m%d')}.log"
+log_path = path.join(script_root, "log")
+
+# check if log directory exists, if not, create it
+if not path.exists(log_path):
+    mkdir(log_path)
+
 logging.basicConfig(
     format="%(levelname)s: [:%(lineno)d] %(message)s",
     datefmt=sc.date_format,
-    filename=path.join(script_root, "log", log_filename),
+    filename=path.join(log_path, log_filename),
     level=logging.INFO,
 )
 
@@ -129,6 +135,7 @@ def run_rsync(filepaths: list, counter: int):
 
 def synchronize_files(all_maps):
     # decide what to sync based on settings
+    print(all_maps)
     if sc.sync_all:
         i = 1
         for paths in all_maps.values():
