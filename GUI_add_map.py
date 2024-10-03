@@ -251,4 +251,14 @@ def main():
 
 
 if __name__ == "__main__":
+    # conf_file = "sync_conf.yaml"
+    # with open(conf_file, "r") as f:
+    #     conf = yaml.safe_load(f)
+    # print(conf)
+    # for var, val in conf["colors"].items():
+    #     vars()[var] = val
+    # string = f"{GB}This{RST} {RB} is a{RST} {CB} test!{RST}"
+    # print(string)
+    # print("OK!")
+    # exit()
     main()
