@@ -9,7 +9,7 @@ import re
 
 # define paths
 script_root = path.dirname(path.realpath(__file__))
-yaml_file = path.join(script_root, "file_map.yaml")
+filemap_file = path.join(script_root, "file_map.yaml")
 conf_file = path.join(script_root, "sync_conf.yaml")
 icon_file = path.join(script_root, "icons/add_map.png")
 find_path = "/"
@@ -26,7 +26,7 @@ vars().update(config["rsync"])
 vars().update(config["gui"])
 
 # load file pair map
-with open(yaml_file, "r") as f:
+with open(filemap_file, "r") as f:
     file_map = yaml.safe_load(f)
 
 map_keys = get_map_keys(file_map)
@@ -186,7 +186,7 @@ def update_yaml(project, src, trg):
         file_map[project] = {next_key: [src, trg]}
     else:
         file_map[project][next_key] = [src, trg]
-    with open(yaml_file, "w") as f:
+    with open(filemap_file, "w") as f:
         yaml.dump(file_map, f, sort_keys=False)
 
 

@@ -12,7 +12,7 @@ import yaml
 script_root = path.dirname(path.realpath(__file__))
 conf_file = path.join(script_root, "sync_conf.yaml")
 rsync_file = path.join(script_root, "rsync_to_remote.py")
-yaml_file = path.join(script_root, "file_map.yaml")
+filemap_file = path.join(script_root, "file_map.yaml")
 icon_file = path.join(script_root, "icons/settings.png")
 
 # import configuration variables
@@ -31,7 +31,7 @@ for vals in config.values():
     vars().update(vals)
 
 # load file pair map
-with open(yaml_file, "r") as f:
+with open(filemap_file, "r") as f:
     file_map = yaml.safe_load(f)
 
 

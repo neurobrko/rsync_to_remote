@@ -1,16 +1,18 @@
 ---
 # RSYNC SETTINGS
 rsync:
-  host: 10.122.58.49
-  username: root
+  host: localhost
+  username: marpauli
   host_address: "117"
-  port: 13117
+  # when editing port, always edit rsync option accordingly!
+  port: 22
   rsync_options:
   - -rtvz
   - --progress
   - -e
-  - ssh -p 13117
-  local_root_dir: /home/marpauli/code/cisco/_SIMPLE
+  - ssh -p 22
+  # if local_root_dir is empty, must be ""
+  local_root_dir: ""
 
 
 # SCRIPT SETTINGS
@@ -18,20 +20,20 @@ script:
   # set 0 to skip check
   VM_check_timeout: 0
   result_timeout: 0
-  # Specify dir to start browsing from
+  # specify dir to start browsing from
   # local_root_dir is used if empty, if LRD empty GUI uses script dir
   default_dir: ''
   date_format: '%Y-%m-%d %H:%M:%S'
 
 # SYNC CONFIG
 sync:
-  # sync all files in <file_map>
+  # sync all files in <file_map> value: true/false
   sync_all: false
-  # sync all files from specified project
+  # sync all files from specified project, null for None
   project: null
   # list of file pairs to sync
   # WARNING: Must be list even with zero or single item!
-  file_keys: []
+  file_keys: [99]
   # INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
 
 # CLI OUTPUT FORMATTING
