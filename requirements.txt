@@ -1,0 +1,6 @@
+pyasn1==0.6.1
+PySimpleGUI-4-foss==4.60.4.1
+pytimedinput==2.0.1
+PyYAML==6.0.2
+rsa==4.9
+setuptools==75.1.0
