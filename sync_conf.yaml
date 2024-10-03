@@ -1,34 +1,38 @@
 ---
 # RSYNC SETTINGS
-host: 10.122.58.49
-username: root
-host_address: "117"
-port: 13117
-rsync_options:
-- -rtvz
-- --progress
-- -e
-- ssh -p 117
-local_root_dir: /home/marpauli/code/cisco/_SIMPLE
+rsync:
+  host: 10.122.58.49
+  username: root
+  host_address: "117"
+  port: 13117
+  rsync_options:
+  - -rtvz
+  - --progress
+  - -e
+  - ssh -p 13117
+  local_root_dir: /home/marpauli/code/cisco/_SIMPLE
 
-# Specify dir to start browsing from
-# local_root_dir is used if empty, if LRD empty GUI uses script dir
-default_dir: ''
 
 # SCRIPT SETTINGS
-# set 0 to skip check
-VM_check_timeout: 0
-result_timeout: 0
-date_format: '%Y-%m-%d %H:%M:%S'
+script:
+  # set 0 to skip check
+  VM_check_timeout: 0
+  result_timeout: 0
+  # Specify dir to start browsing from
+  # local_root_dir is used if empty, if LRD empty GUI uses script dir
+  default_dir: ''
+  date_format: '%Y-%m-%d %H:%M:%S'
 
-# SYNC ALL FILES IN <file_map>
-sync_all: false
-# SYNC ALL FILES FROM SPECIFIED PROJECT
-project: null
-# LIST OF FILES TO SYNC
-# WARNING: Must be list even with single item!
-file_keys: []
-# INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
+# SYNC CONFIG
+sync:
+  # sync all files in <file_map>
+  sync_all: false
+  # sync all files from specified project
+  project: null
+  # list of file pairs to sync
+  # WARNING: Must be list even with zero or single item!
+  file_keys: []
+  # INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
 
 # CLI OUTPUT FORMATTING
 colors:
@@ -42,4 +46,11 @@ colors:
   BLD: "\e[1m"    # bold
   UND: "\e[4m"    # underline
   RST: "\e[0m"    # reset formatting
+
+# GUI CONFIG
+gui:
+  sg_theme: DarkGrey11
+  DEFTC: lightgrey
+  CHANGETC: red
+  ERRTC: yellow
 ...

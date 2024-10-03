@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sync_conf as sc
 from subprocess import run, PIPE
@@ -96,10 +96,6 @@ def check_map_keys(filemap: dict) -> dict:
 
 def get_project_maps(filemap: dict, project: str) -> dict:
     return filemap[project]
-
-
-def run_cmd(cmd_list: list):
-    run(cmd_list)
 
 
 def run_rsync(filepaths: list, counter: int):
