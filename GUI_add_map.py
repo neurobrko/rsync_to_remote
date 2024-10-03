@@ -20,7 +20,7 @@ with open(conf_file, "r") as f:
 
 # load variables
 # create empty variables just for pyCharm not to raise undefined variable warning.
-host = username = host_address = port = local_root_dir = rsync_options = ""
+host = username = port = local_root_dir = rsync_options = ""
 sg_theme = DEFTC = CHANGETC = ERRTC = ""
 vars().update(config["rsync"])
 vars().update(config["gui"])
@@ -191,7 +191,10 @@ def update_yaml(project, src, trg):
 
 
 def main():
-    chdir(local_root_dir)
+    if path.exists(local_root_dir):
+        chdir(local_root_dir)
+    else:
+        chdir(script_root)
     window = sg.Window("Set file paths for rsync_to_remote.py", layout, icon=icon_file)
 
     while True:

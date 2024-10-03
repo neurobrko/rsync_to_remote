@@ -23,8 +23,7 @@ with open(conf_file, "r") as f:
 config.pop("gui")
 
 # set empty variable. Otherwise, pyCharm will report unresolved reference :(
-# TODO: remove host_address, specify port directly
-host = username = host_address = port = local_root_dir = ""
+host = username = port = local_root_dir = ""
 rsync_options = []
 VM_check_timeout = result_timeout = default_dir = date_format = ""
 project = file_keys = ""
@@ -59,7 +58,6 @@ logging.basicConfig(
 ap = argparse.ArgumentParser()
 ap.add_argument("-r", "--remote", help="Remote host for synchronization")
 ap.add_argument("-u", "--username", help="Remote username")
-ap.add_argument("-ha", "--host_address", help="Host address part of IP")
 ap.add_argument("-s", "--ssh_port", help="SSH port")
 ap.add_argument("-l", "--local_root_dir", help="Root directory for source files")
 ap.add_argument("-vt", "--vm_timeout", help="Timeout to check VM info")
@@ -79,8 +77,6 @@ if args.remote:
     host = args.remote
 if args.username:
     username = args.username
-if args.host_address:
-    host_address = args.host_address
 if args.ssh_port:
     port = args.ssh_port
     # if port is specified in CLI, alter rsync_options!

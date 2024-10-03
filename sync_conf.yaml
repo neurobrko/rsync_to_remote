@@ -3,7 +3,6 @@
 rsync:
   host: localhost
   username: marpauli
-  host_address: "117"
   # when editing port, always edit rsync option accordingly!
   port: 22
   rsync_options:
@@ -11,7 +10,8 @@ rsync:
   - --progress
   - -e
   - ssh -p 22
-  # if local_root_dir is empty, must be ""
+  # local_root_dir should ALWAYS contain valid path,
+  # BUT if empty, must be ""
   local_root_dir: ""
 
 

@@ -21,7 +21,7 @@ with open(conf_file, "r") as f:
 
 # load variables
 # create empty variables just for pyCharm not to raise undefined variable warning.
-host = username = host_address = port = local_root_dir = rsync_options = ""
+host = username = port = local_root_dir = rsync_options = ""
 VM_check_timeout = result_timeout = default_dir = date_format = ""
 project = file_keys = ""
 sync_all = False
@@ -70,16 +70,6 @@ def validate_changes(vals, window):
             f"username = \"{vals['-USERNAME-']}\"",
             "-u",
             vals["-USERNAME-"],
-        ]
-    if vals["-HOST-ADDRESS-"] != host_address:
-        try:
-            int(vals["-HOST-ADDRESS-"])
-        except:
-            raise WrongConfiguration("Invalid host address part of IP!")
-        changed_values["host_address ="] = [
-            f"host_address = \"{vals['-HOST-ADDRESS-']}\"",
-            "-ha",
-            vals["-HOST-ADDRESS-"],
         ]
     if vals["-PORT-"] != port:
         try:
@@ -258,7 +248,6 @@ else:
 fields = {
     "-HOST-": host,
     "-USERNAME-": username,
-    "-HOST-ADDRESS-": host_address,
     "-PORT-": port,
     "-RSYNC-OPT-": rsync_options,
     "-LRD-": local_root_dir,
@@ -273,11 +262,10 @@ fields = {
 
 # configure layout
 layout = [
-    [sg.Column(config_line("Connect to host:", host, "-HOST-"))],
     [
-        sg.Column(config_line("username:", username, "-USERNAME-", 33)),
-        sg.Column(config_line("VM host address:", host_address, "-HOST-ADDRESS-", 20)),
-        sg.Column(config_line("port:", port, "-PORT-", 20)),
+        sg.Column(config_line("remote host:", host, "-HOST-", 29)),
+        sg.Column(config_line("username:", username, "-USERNAME-", 29)),
+        sg.Column(config_line("port:", port, "-PORT-", 15)),
     ],
     [sg.Column(config_line("rsync options:", " ".join(rsync_options), "-RSYNC-OPT-"))],
     [
