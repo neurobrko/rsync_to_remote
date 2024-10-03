@@ -30,7 +30,7 @@ def get_map_keys(filemap):
 
 
 def validate_changes(vals):
-    # TODO: make changes just print error in window, not raise error and break
+    # TODO: invalid changes just print error in window, not raise error and break
     """Get changed values and validate them"""
     changed_values = {}
 
@@ -79,7 +79,6 @@ def validate_changes(vals):
             vals["-PORT-"],
         ]
     # specifying -e option is kind of a brute force, but working for this case
-    # TODO: FIX rsync_option parsing
     if vals["-RSYNC-OPT-"] != " ".join(sc.rsync_options):
         try:
             options = vals["-RSYNC-OPT-"].split()
