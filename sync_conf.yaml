@@ -1,18 +1,18 @@
 ---
 # RSYNC SETTINGS
 rsync:
-  host: localhost
-  username: marpauli
+  host: 10.122.58.49
+  username: root
   # when editing port, always edit rsync option accordingly!
-  port: 22
+  port: 13117
   rsync_options:
   - -rtvz
   - --progress
   - -e
-  - ssh -p 22
+  - ssh -p 13117
   # local_root_dir should ALWAYS contain valid path,
   # BUT if empty, must be ""
-  local_root_dir: ""
+  local_root_dir: "/home/marpauli/code/cisco/_SIMPLE"
 
 
 # SCRIPT SETTINGS

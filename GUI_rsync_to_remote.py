@@ -5,8 +5,16 @@ from error_handler import WrongConfiguration, NoChangeToConfig
 import re
 from os import path, chdir
 from subprocess import run
+from datetime import datetime
+from time import strftime
 import yaml
 
+# testing
+python_env = (
+    "/home/marpauli/.cache/pypoetry/virtualenvs/rsync-to-vm-yQGWRMhR-py3.12/bin/python"
+)
+# production
+# /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12
 
 # define paths
 script_root = path.dirname(path.realpath(__file__))
@@ -46,41 +54,54 @@ def validate_changes(vals, window):
     # TODO: invalid changes just print error in window, not raise error and break
     """Get changed values and validate them"""
     changed_values = {}
+    return_value = True
 
     if vals["-HOST-"] != host:
         if vals["-HOST-"] != "localhost":
             if len(host_ip := vals["-HOST-"].split(".")) != 4:
                 window["-ERROR-FIELD-"].update("Invalid host!")
-            try:
-                [int(add) for add in host_ip]
-            except:
-                window["-ERROR-FIELD-"].update("Invalid host!")
+                return_value = False
+            else:
+                try:
+                    [int(add) for add in host_ip]
+                    changed_values["host"] = [
+                        vals["-HOST-"],
+                        "-r",
+                        vals["-HOST-"],
+                    ]
+                except:
+                    window["-ERROR-FIELD-"].update("Invalid host!")
+                    return_value = False
+        else:
+            changed_values["host"] = [
+                vals["-HOST-"],
+                "-r",
+                vals["-HOST-"],
+            ]
 
-        changed_values["host = "] = [
-            f"host = \"{vals['-HOST-']}\"",
-            "-r",
-            vals["-HOST-"],
-        ]
     if vals["-USERNAME-"] != username:
         pattern = re.compile(r"[a-zA-Z0-9]+")
         if not re.fullmatch(pattern, vals["-USERNAME-"]):
-            raise WrongConfiguration("Invalid username!")
-
-        changed_values["username = "] = [
-            f"username = \"{vals['-USERNAME-']}\"",
-            "-u",
-            vals["-USERNAME-"],
-        ]
-    if vals["-PORT-"] != port:
+            window["-ERROR-FIELD-"].update("Invalid username!")
+            return_value = False
+        else:
+            changed_values["username"] = [
+                vals["-USERNAME-"],
+                "-u",
+                vals["-USERNAME-"],
+            ]
+    if vals["-PORT-"] != str(port):
         try:
             int(vals["-PORT-"])
+            changed_values["port"] = [
+                vals["-PORT-"],
+                "-s",
+                vals["-PORT-"],
+            ]
         except:
-            raise WrongConfiguration("Invalid port!")
-        changed_values["port ="] = [
-            f"port = \"{vals['-PORT-']}\"",
-            "-s",
-            vals["-PORT-"],
-        ]
+            window["-ERROR-FIELD-"].update("Invalid port number!")
+            return_value = False
+
     # specifying -e option is kind of a brute force, but working for this case
     global rsync_options
     if vals["-RSYNC-OPT-"] != " ".join(rsync_options):
@@ -92,53 +113,63 @@ def validate_changes(vals, window):
             for opt in options:
                 rsync_options = rsync_options + f'"{opt}", '
             rsync_options = rsync_options + '"-e", f"ssh -p {port}"]'
-
+            changed_values["rsync_options ="] = [
+                f"rsync_options = {rsync_options}",
+            ]
         except:
-            raise WrongConfiguration("Invalid rsync arguments!")
-        changed_values["rsync_options ="] = [
-            f"rsync_options = {rsync_options}",
-        ]
+            window["-ERROR-FIELD-"].update("Invalid rsync arguments!")
+            return_value = False
+
     if vals["-LRD-"] != local_root_dir:
         if path.exists(vals["-LRD-"]) or vals["-LRD-"] == "":
-            changed_values["local_root_dir ="] = [
-                f"local_root_dir = \"{vals['-LRD-']}\"",
+            changed_values["local_root_dir"] = [
+                vals["-LRD-"],
                 "-l",
                 vals["-LRD-"],
             ]
         else:
-            raise WrongConfiguration("Invalid path to local root directory!")
-    if int(vals["-VCT-"]) != VM_check_timeout:
+            window["-ERROR-FIELD-"].update("Invalid path to local root directory!")
+            return_value = False
+    if vals["-VCT-"] != str(VM_check_timeout):
         try:
             int(vals["-VCT-"])
+            changed_values["VM_check_timeout"] = [
+                "-VCT-",
+                "-vt",
+                vals["-VCT-"],
+            ]
         except:
-            raise WrongConfiguration("Invalid VM check timeout!")
-        changed_values["VM_check_timeout ="] = [
-            f"VM_check_timeout = {vals['-VCT-']}",
-            "-vt",
-            vals["-VCT-"],
-        ]
-    if int(vals["-RCT-"]) != result_timeout:
+            window["-ERROR-FIELD-"].update("Invalid VM check timeout!")
+            return_value = False
+
+    if vals["-RCT-"] != str(result_timeout):
         try:
             int(vals["-RCT-"])
+            changed_values["result_timeout"] = [
+                vals["-RCT-"],
+                "-rt",
+                vals["-RCT-"],
+            ]
         except:
-            raise WrongConfiguration("Invalid Result check timeout!")
-        changed_values["result_timeout ="] = [
-            f"result_timeout = {vals['-RCT-']}",
-            "-rt",
-            vals["-RCT-"],
-        ]
+            window["-ERROR-FIELD-"].update("Invalid Result check timeout!")
+            return_value = False
+
     if vals["-DTF-"] != date_format:
-        # probably too complex for validation for sake of this script
-        changed_values["date_format ="] = [f"date_format = \"{vals['-DTF-']}\""]
+        # validation Mark I Eyeball at GUI
+        changed_values["date_format"] = [vals["-DTF-"], "-t", vals["-DTF-"]]
 
     if vals["-SYNC-ALL-"] != sync_all:
         if type(vals["-SYNC-ALL-"]) != bool:
-            raise WrongConfiguration("Something went horribly wrong with checkbox!")
-        changed_values["sync_all ="] = [
-            f"sync_all = {vals['-SYNC-ALL-']}",
-            "-l",
-            vals["-SYNC-ALL-"],
-        ]
+            window["-ERROR-FIELD-"].update(
+                "Something went horribly wrong with checkbox!"
+            )
+            return_value = False
+        else:
+            changed_values["sync_all"] = [
+                vals["-SYNC-ALL-"],
+                "-l",
+                vals["-SYNC-ALL-"],
+            ]
     if vals["-PROJECT-"] == "---":
         option = None
     else:
@@ -146,72 +177,86 @@ def validate_changes(vals, window):
 
     if option != project:
         if not option:
-            changed_values["project ="] = [
-                f"project = None",
-                "",
-                "",
-            ]
+            changed_values["project"] = [None, "", ""]
         else:
-            changed_values["project ="] = [
-                f'project = "{option}"',
+            changed_values["project"] = [
+                option,
                 "-p",
                 vals["-PROJECT-"],
             ]
     err = ""
     try:
         map_keys = get_map_keys(file_map)
-        if (new_keys := [int(key) for key in vals["-KEYS-"].split()]) != file_keys:
+        if vals["-KEYS-"] == "" and (
+            vals["-PROJECT-"] == "---" and vals["-SYNC-ALL-"] == False
+        ):
+            window["-ERROR-FIELD-"].update(
+                "This setting would yield nothing to synchronize!"
+            )
+            return_value = False
+        elif (new_keys := [int(key) for key in vals["-KEYS-"].split()]) != file_keys:
             for key in new_keys:
                 if key not in map_keys:
-                    err = "Supplied key not in file map!"
-                    raise WrongConfiguration(err)
-            changed_values["file_keys ="] = [
-                f"file_keys = {new_keys}",
-                "-f",
-                ",".join([str(key) for key in new_keys]),
-            ]
+                    window["-ERROR-FIELD-"].update("Supplied key not in file map!")
+                    return_value = False
+                    continue
+                else:
+                    changed_values["file_keys"] = [
+                        new_keys,
+                        "-f",
+                        ",".join([str(key) for key in new_keys]),
+                    ]
 
     except:
-        if not err:
-            err = "Invalid file keys!"
-        raise WrongConfiguration(err)
-    return changed_values
+        window["-ERROR-FIELD-"].update("Invalid file keys!")
+        return_value = False
+
+    print(changed_values)
+    if return_value:
+        return changed_values
+    else:
+        return None
 
 
 def update_conf(values, window):
     """Update configuration file with changed values"""
     changes = validate_changes(values, window)
-    if len(changes) == 0:
-        raise NoChangeToConfig("There were no changes in configuration!")
-    with open(conf_file, "r") as file:
-        lines = file.readlines()
+    if not changes:
+        pass
+    elif len(changes) == 0:
+        window["-ERROR-FIELD-"].update("There were no changes in configuration!")
+    else:
+        with open(conf_file, "r") as file:
+            lines = file.readlines()
 
-    for change, values in changes.items():
-        for i, line in enumerate(lines):
-            if change in line and "#" not in line:
-                lines[i] = f"{values[0]}\n"
+        for change, values in changes.items():
+            for i, line in enumerate(lines):
+                if change in line and "#" not in line:
+                    lines[i] = f"{values[0]}\n"
 
-    with open(conf_file, "w") as file:
-        file.writelines(lines)
+        with open(conf_file, "w") as file:
+            file.writelines(lines)
     return changes
 
 
 def get_cmd_list(values, window):
     """
-    Return list od arguments for subprocess.run()
+    Return list of arguments for subprocess.run()
     to run rsync_to_remote.py with modified arguments
     """
     changes = validate_changes(values, window)
-    cmd_list = [
-        "/home/marpauli/.cache/pypoetry/virtualenvs/rsync-to-vm-yQGWRMhR-py3.12/bin/python",
-        rsync_file,
-    ]
-    for k, vals in changes.items():
-        if k == "rsync_options =":
-            continue
-        cmd_list = cmd_list + vals[1:3]
-
-    return cmd_list
+    if type(changes) == dict:
+        cmd_list = [
+            python_env,
+            rsync_file,
+        ]
+        for k, vals in changes.items():
+            if k == "rsync_options":
+                continue
+            cmd_list = cmd_list + vals[1:3]
+        return cmd_list
+    else:
+        return None
 
 
 # set theme for GUI
@@ -234,11 +279,6 @@ def config_line(name, value, key, width=80):
         ],
     ]
 
-
-# set variables and fields dict for colorizing changed output
-DEFTC = "lightgrey"
-CHANGETC = "red"
-ERRTC = "yellow"
 
 if not project:
     opt_def_val = "---"
@@ -322,7 +362,20 @@ layout = [
                     ),
                 ]
             ]
-        )
+        ),
+        sg.Push(),
+        sg.Column(
+            [
+                [
+                    sg.Text(
+                        f"(example: {datetime(2000, 12, 24, 12, 53, 7).strftime(date_format)})",
+                        text_color="gray",
+                        key="-DTEX-",
+                        justification="right",
+                    )
+                ]
+            ]
+        ),
     ],
     [
         sg.Column(
@@ -366,11 +419,18 @@ def main():
         if event in ("Exit", sg.WIN_CLOSED):
             break
         elif event == "Run":
+            window["-ERROR-FIELD-"].update("")
             # run the command with cli arguments based on changes
             cmd_list = get_cmd_list(values, window)
-            # run(cmd_list)
-            # break
+            if cmd_list:
+                print(cmd_list)
+                print("execute")
+                run(cmd_list)
+                break
+            else:
+                print("tocim!")
         elif event == "Update conf":
+            # TODO: FIX UDATE CONF
             # update sync_conf, but do not run
             update_conf(values, window)
             print(f"\033[1;32mConfiguration successfully updated!\033[0m")
@@ -381,13 +441,16 @@ def main():
             # run using new settings
             run(
                 [
-                    "/home/marpauli/.cache/pypoetry/virtualenvs/rsync-to-vm-yQGWRMhR-py3.12/bin/python",
+                    python_env,
                     rsync_file,
                 ]
-                # production python bin: /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12
             )
             break
         elif event in list(fields.keys()):
+            if event == "-DTF-":
+                window["-DTEX-"].update(
+                    f"(example: {datetime(2000, 12, 24, 12, 53, 7).strftime(values['-DTF-'])})"
+                )
             if fields[event] != values[event]:
                 if event == "-RSYNC-OPT-":
                     if " ".join(rsync_options) != values[event]:
@@ -396,7 +459,7 @@ def main():
                         window[event].update(text_color=DEFTC)
                 elif event in ["-VCT-", "-RCT-"]:
                     if values[event] != "":
-                        if fields[event] != int(values[event]):
+                        if str(fields[event]) != values[event]:
                             window[event].update(text_color=CHANGETC)
                         else:
                             window[event].update(text_color=DEFTC)

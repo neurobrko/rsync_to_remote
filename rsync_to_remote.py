@@ -62,6 +62,7 @@ ap.add_argument("-s", "--ssh_port", help="SSH port")
 ap.add_argument("-l", "--local_root_dir", help="Root directory for source files")
 ap.add_argument("-vt", "--vm_timeout", help="Timeout to check VM info")
 ap.add_argument("-rt", "--result_timeout", help="Timeout to check script output")
+ap.add_argument("-t", "--timestamp", help="Timestamp format for logging")
 ap.add_argument(
     "-a", "--sync_all", help="Sync all files from all projects", action="store_true"
 )
@@ -87,6 +88,8 @@ if args.vm_timeout:
     VM_check_timeout = int(args.vm_timeout)
 if args.result_timeout:
     result_timeout = int(args.result_timeout)
+if args.timestamp:
+    date_format = args.timestamp
 if args.sync_all:
     sync_all = True
 if args.project:
@@ -167,7 +170,7 @@ def synchronize_files(all_maps):
 def main():
     print("".join([BLD, "> Sync files to remote VM <".center(80, "="), RST]))
     LOGGER.info("> SYNC START <".center(50, "="))
-    LOGGER.info(f"timestamp: {strftime('%Y-%m-%d %H:%M:%S')}")
+    LOGGER.info(f"timestamp: {strftime(date_format)}")
     # Check for repeating keys in file map projects
     try:
         all_maps = check_map_keys(file_map)
@@ -213,7 +216,7 @@ def main():
     else:
         i = synchronize_files(all_maps)
 
-    print(f"{BLD}Synced file(s) count: {RST}{RB}{i-1}{RST}")
+    print(f"{BLD}\nSynced file(s) count: {RST}{RB}{i-1}{RST}\n")
     LOGGER.info(f"\nSynced file(s) count: {i-1}")
     LOGGER.info("".join(["> SYNC END <".center(50, "="), "\n\n"]))
 
