@@ -14,7 +14,6 @@ rsync:
   # BUT if empty, must be ""
   local_root_dir: "/home/marpauli/code/cisco/_SIMPLE"
 
-
 # SCRIPT SETTINGS
 script:
   # set 0 to skip check

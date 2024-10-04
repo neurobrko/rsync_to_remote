@@ -1,0 +1,71 @@
+# WARNING: ALL COMMENTS must be at the beginning of fileo for the sake of preserving them!
+#          DO NOT use inline comments!
+#
+# RSYNC SETTINGS
+#   - when editing port, always edit rsync option accordingly!
+#   - local_root_dir should ALWAYS contain valid path,
+#     BUT if empty, must be "" (same goes for default_dir)
+#
+# SCRIPT SETTINGS
+#   - set timeouts to 0 to skip check
+#   - set default_dir to specify dir to start browsing from
+#     local_root_dir is used if empty, if LRD empty script parent dir is used
+#
+# SYNC SETTINGS
+#   INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
+#   - sync_all: sync all files in <file_map.yaml>; value: true/false
+#   - project: sync all files from specified project, null for None
+#   - file_keys: list of file pairs to sync
+#     WARNING: Must be list even with zero or single item! hint: empty_list: []
+#
+# COLORS SETTINGS
+#    GN: green normal
+#    GB: green bold
+#    RN: red normal
+#    RB: red bold
+#    CN: cyan normal
+#    CB: cyan bold
+#    WU: white underline
+#    BLD: bold
+#    UND: underline
+#    RST: reset formatting
+#
+# ALL comments below will be lost when editing via GUI!
+---
+rsync:
+  host: 10.122.58.49
+  username: root
+  port: 13117
+  rsync_options:
+  - -rtvz
+  - --progress
+  - -e
+  - ssh -p 13117
+  local_root_dir: /home/marpauli/code/cisco/_SIMPLE
+script:
+  VM_check_timeout: 0
+  result_timeout: 0
+  default_dir: ''
+  date_format: '%Y-%m-%d %H:%M:%S'
+sync:
+  sync_all: false
+  project: null
+  file_keys:
+  - 99
+colors:
+  GN: "\e[0;32m"
+  GB: "\e[1;32m"
+  RN: "\e[0;31m"
+  RB: "\e[1;31m"
+  CN: "\e[0;36m"
+  CB: "\e[1;36m"
+  WU: "\e[4;37m"
+  BLD: "\e[1m"
+  UND: "\e[4m"
+  RST: "\e[0m"
+gui:
+  sg_theme: DarkGrey11
+  DEFTC: lightgrey
+  CHANGETC: red
+  ERRTC: yellow
+...
