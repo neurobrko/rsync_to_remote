@@ -5,3 +5,10 @@ test:
   99:
   - /home/marpauli/code/cisco/rsync_to_VM/test_rsync/src/test.txt
   - /home/marpauli/code/cisco/rsync_to_VM/test_rsync/trg/test.txt
+  - '6933':
+  1:
+  - simple_ui/simple_ui/http_handlers.py
+  - /var/local/virl2/.local/lib/python3.12/site-packages/simple_ui/http_handlers.py
+  2:
+  - core/simple_core/controller/core_controller.py
+  - /var/local/virl2/.local/lib/python3.12/site-packages/simple_core/controller/core_controller.py

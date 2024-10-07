@@ -10,7 +10,7 @@ import re
 # define paths
 script_root = path.dirname(path.realpath(__file__))
 filemap_file = path.join(script_root, "file_map.yaml")
-conf_file = path.join(script_root, "sync_conf.yaml")
+conf_file = path.join(script_root, "sync_conf_test.yaml")
 icon_file = path.join(script_root, "icons/add_map.png")
 find_path = "/"
 

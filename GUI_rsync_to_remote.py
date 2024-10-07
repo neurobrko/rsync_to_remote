@@ -16,7 +16,7 @@ python_env = (
 
 # define paths
 script_root = path.dirname(path.realpath(__file__))
-conf_file = path.join(script_root, "sync_conf.yaml")
+conf_file = path.join(script_root, "sync_conf_test.yaml")
 rsync_file = path.join(script_root, "rsync_to_remote.py")
 filemap_file = path.join(script_root, "file_map.yaml")
 icon_file = path.join(script_root, "icons/settings.png")
@@ -208,7 +208,7 @@ def validate_changes(vals, window):
                 if key not in map_keys:
                     window["-ERROR-FIELD-"].update("Supplied key not in file map!")
                     return_value = False
-                    continue
+                    # continue
                 else:
                     changed_values["file_keys"] = [
                         "sync",
@@ -229,8 +229,6 @@ def update_conf(values, window):
     """Update configuration file with changed values"""
     changes = validate_changes(values, window)
     if not changes:
-        pass
-    elif len(changes) == 0:
         window["-ERROR-FIELD-"].update("There were no changes in configuration!")
     else:
         for change, ch_list in changes.items():
@@ -426,14 +424,15 @@ def main():
             window["-ERROR-FIELD-"].update("")
             # run the command with cli arguments based on changes
             cmd_list = get_cmd_list(values, window)
-            print(cmd_list)
             if cmd_list:
                 run(cmd_list)
                 break
         elif event == "Update conf":
             # update sync_conf, but do not run
-            update_conf(values, window)
-            break
+            result = update_conf(values, window)
+
+            if result:
+                break
         elif event == "Update conf & Run":
             # update sync_conf
             update_conf(values, window)
