@@ -16,7 +16,7 @@ python_env = (
 
 # define paths
 script_root = path.dirname(path.realpath(__file__))
-conf_file = path.join(script_root, "sync_conf_test.yaml")
+conf_file = path.join(script_root, "sync_conf.yaml")
 rsync_file = path.join(script_root, "rsync_to_remote.py")
 filemap_file = path.join(script_root, "file_map.yaml")
 icon_file = path.join(script_root, "icons/settings.png")

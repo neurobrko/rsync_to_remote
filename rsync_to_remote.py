@@ -11,7 +11,7 @@ import yaml
 
 # define paths
 script_root = path.dirname(path.realpath(__file__))
-conf_file = path.join(script_root, "sync_conf_test.yaml")
+conf_file = path.join(script_root, "sync_conf.yaml")
 filemap_file = path.join(script_root, "file_map.yaml")
 
 # import configuration variables
