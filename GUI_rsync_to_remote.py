@@ -413,7 +413,9 @@ def main():
     elif path.exists(local_root_dir):
         chdir(local_root_dir)
     # Create window
-    window = sg.Window("Configure rsync_to_remote.py", layout, icon=icon_file)
+    window = sg.Window(
+        "Configure and/or run rsync_to_remote.py", layout, icon=icon_file
+    )
     # Create an event loop
     while True:
         event, values = window.read()
