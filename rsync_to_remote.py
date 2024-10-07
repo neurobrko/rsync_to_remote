@@ -10,9 +10,8 @@ from pytimedinput import timedKey
 import yaml
 
 # define paths
-# TODO: delete log files older then x days.
 script_root = path.dirname(path.realpath(__file__))
-conf_file = path.join(script_root, "sync_conf.yaml")
+conf_file = path.join(script_root, "sync_conf_test.yaml")
 filemap_file = path.join(script_root, "file_map.yaml")
 
 # import configuration variables
@@ -62,7 +61,7 @@ ap.add_argument("-s", "--ssh_port", help="SSH port")
 ap.add_argument("-l", "--local_root_dir", help="Root directory for source files")
 ap.add_argument("-vt", "--vm_timeout", help="Timeout to check VM info")
 ap.add_argument("-rt", "--result_timeout", help="Timeout to check script output")
-ap.add_argument("-t", "--timestamp", help="Timestamp format for logging")
+ap.add_argument("-d", "--date_format", help="Timestamp format for logging")
 ap.add_argument(
     "-a", "--sync_all", help="Sync all files from all projects", action="store_true"
 )
@@ -88,8 +87,8 @@ if args.vm_timeout:
     VM_check_timeout = int(args.vm_timeout)
 if args.result_timeout:
     result_timeout = int(args.result_timeout)
-if args.timestamp:
-    date_format = args.timestamp
+if args.date_format:
+    date_format = args.date_format
 if args.sync_all:
     sync_all = True
 if args.project:

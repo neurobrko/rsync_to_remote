@@ -21,7 +21,7 @@ script:
   result_timeout: 0
   # specify dir to start browsing from
   # local_root_dir is used if empty, if LRD empty GUI uses script dir
-  default_dir: ''
+  default_browse_dir: "/home/marpauli/code/cisco/_SIMPLE"
   date_format: '%Y-%m-%d %H:%M:%S'
 
 # SYNC CONFIG

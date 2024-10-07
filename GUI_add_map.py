@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from GUI_rsync_to_remote import get_map_keys, DEFTC, CHANGETC, ERRTC
+from GUI_rsync_to_remote import get_map_keys
 from subprocess import run, PIPE, STDOUT
 from os import path, chdir
 import PySimpleGUI as sg

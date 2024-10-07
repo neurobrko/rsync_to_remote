@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
 import PySimpleGUI as sg
-from error_handler import WrongConfiguration, NoChangeToConfig
 import re
 from os import path, chdir
 from subprocess import run
 from datetime import datetime
-from time import strftime
 import yaml
 
 # testing
@@ -18,7 +16,7 @@ python_env = (
 
 # define paths
 script_root = path.dirname(path.realpath(__file__))
-conf_file = path.join(script_root, "sync_conf.yaml")
+conf_file = path.join(script_root, "sync_conf_test.yaml")
 rsync_file = path.join(script_root, "rsync_to_remote.py")
 filemap_file = path.join(script_root, "file_map.yaml")
 icon_file = path.join(script_root, "icons/settings.png")
@@ -30,7 +28,7 @@ with open(conf_file, "r") as f:
 # load variables
 # create empty variables just for pyCharm not to raise undefined variable warning.
 host = username = port = local_root_dir = rsync_options = ""
-VM_check_timeout = result_timeout = default_dir = date_format = ""
+VM_check_timeout = result_timeout = default_browse_dir = date_format = ""
 project = file_keys = ""
 sync_all = False
 GN = GB = RN = RB = CN = CB = WU = BLD = UND = RST = ""
@@ -51,7 +49,6 @@ def get_map_keys(filemap):
 
 
 def validate_changes(vals, window):
-    # TODO: invalid changes just print error in window, not raise error and break
     """Get changed values and validate them"""
     changed_values = {}
     return_value = True
@@ -65,6 +62,7 @@ def validate_changes(vals, window):
                 try:
                     [int(add) for add in host_ip]
                     changed_values["host"] = [
+                        "rsync",
                         vals["-HOST-"],
                         "-r",
                         vals["-HOST-"],
@@ -74,6 +72,7 @@ def validate_changes(vals, window):
                     return_value = False
         else:
             changed_values["host"] = [
+                "rsync",
                 vals["-HOST-"],
                 "-r",
                 vals["-HOST-"],
@@ -86,6 +85,7 @@ def validate_changes(vals, window):
             return_value = False
         else:
             changed_values["username"] = [
+                "rsync",
                 vals["-USERNAME-"],
                 "-u",
                 vals["-USERNAME-"],
@@ -94,7 +94,8 @@ def validate_changes(vals, window):
         try:
             int(vals["-PORT-"])
             changed_values["port"] = [
-                vals["-PORT-"],
+                "rsync",
+                int(vals["-PORT-"]),
                 "-s",
                 vals["-PORT-"],
             ]
@@ -104,17 +105,17 @@ def validate_changes(vals, window):
 
     # specifying -e option is kind of a brute force, but working for this case
     global rsync_options
-    if vals["-RSYNC-OPT-"] != " ".join(rsync_options):
+    if vals["-RSYNC-OPT-"] != " ".join(rsync_options) or vals["-PORT-"] != str(port):
         try:
             options = vals["-RSYNC-OPT-"].split()
             e_index = options.index("-e")
             del options[e_index : e_index + 4]
-            rsync_options = "["
-            for opt in options:
-                rsync_options = rsync_options + f'"{opt}", '
-            rsync_options = rsync_options + '"-e", f"ssh -p {port}"]'
-            changed_values["rsync_options ="] = [
-                f"rsync_options = {rsync_options}",
+            rsync_options = options + ["-e", f"ssh -p {vals['-PORT-']}"]
+            changed_values["rsync_options"] = [
+                "rsync",
+                rsync_options,
+                "",
+                "",
             ]
         except:
             window["-ERROR-FIELD-"].update("Invalid rsync arguments!")
@@ -122,10 +123,15 @@ def validate_changes(vals, window):
 
     if vals["-LRD-"] != local_root_dir:
         if path.exists(vals["-LRD-"]) or vals["-LRD-"] == "":
+            if vals["-LRD-"] == "":
+                val_to_cmd = " "
+            else:
+                val_to_cmd = vals["-LRD-"]
             changed_values["local_root_dir"] = [
+                "rsync",
                 vals["-LRD-"],
                 "-l",
-                vals["-LRD-"],
+                val_to_cmd,
             ]
         else:
             window["-ERROR-FIELD-"].update("Invalid path to local root directory!")
@@ -134,7 +140,8 @@ def validate_changes(vals, window):
         try:
             int(vals["-VCT-"])
             changed_values["VM_check_timeout"] = [
-                "-VCT-",
+                "script",
+                int(vals["-VCT-"]),
                 "-vt",
                 vals["-VCT-"],
             ]
@@ -146,7 +153,8 @@ def validate_changes(vals, window):
         try:
             int(vals["-RCT-"])
             changed_values["result_timeout"] = [
-                vals["-RCT-"],
+                "script",
+                int(vals["-RCT-"]),
                 "-rt",
                 vals["-RCT-"],
             ]
@@ -156,7 +164,7 @@ def validate_changes(vals, window):
 
     if vals["-DTF-"] != date_format:
         # validation Mark I Eyeball at GUI
-        changed_values["date_format"] = [vals["-DTF-"], "-t", vals["-DTF-"]]
+        changed_values["date_format"] = ["script", vals["-DTF-"], "-d", vals["-DTF-"]]
 
     if vals["-SYNC-ALL-"] != sync_all:
         if type(vals["-SYNC-ALL-"]) != bool:
@@ -166,25 +174,26 @@ def validate_changes(vals, window):
             return_value = False
         else:
             changed_values["sync_all"] = [
+                "sync",
                 vals["-SYNC-ALL-"],
-                "-l",
-                vals["-SYNC-ALL-"],
+                "-a",
+                "",
             ]
     if vals["-PROJECT-"] == "---":
-        option = None
+        project_option = None
     else:
-        option = vals["-PROJECT-"]
+        project_option = vals["-PROJECT-"]
 
-    if option != project:
-        if not option:
-            changed_values["project"] = [None, "", ""]
+    if project_option != project:
+        if not project_option:
+            changed_values["project"] = ["sync", None, "", ""]
         else:
             changed_values["project"] = [
-                option,
+                "sync",
+                project_option,
                 "-p",
-                vals["-PROJECT-"],
+                project_option,
             ]
-    err = ""
     try:
         map_keys = get_map_keys(file_map)
         if vals["-KEYS-"] == "" and (
@@ -202,6 +211,7 @@ def validate_changes(vals, window):
                     continue
                 else:
                     changed_values["file_keys"] = [
+                        "sync",
                         new_keys,
                         "-f",
                         ",".join([str(key) for key in new_keys]),
@@ -211,11 +221,8 @@ def validate_changes(vals, window):
         window["-ERROR-FIELD-"].update("Invalid file keys!")
         return_value = False
 
-    print(changed_values)
     if return_value:
-        return changed_values
-    else:
-        return None
+        return changed_values or None
 
 
 def update_conf(values, window):
@@ -226,16 +233,10 @@ def update_conf(values, window):
     elif len(changes) == 0:
         window["-ERROR-FIELD-"].update("There were no changes in configuration!")
     else:
-        with open(conf_file, "r") as file:
-            lines = file.readlines()
-
-        for change, values in changes.items():
-            for i, line in enumerate(lines):
-                if change in line and "#" not in line:
-                    lines[i] = f"{values[0]}\n"
-
+        for change, ch_list in changes.items():
+            config[ch_list[0]][change] = ch_list[1]
         with open(conf_file, "w") as file:
-            file.writelines(lines)
+            yaml.dump(config, file, sort_keys=False)
     return changes
 
 
@@ -253,7 +254,8 @@ def get_cmd_list(values, window):
         for k, vals in changes.items():
             if k == "rsync_options":
                 continue
-            cmd_list = cmd_list + vals[1:3]
+            for val in vals[-2:]:
+                val and cmd_list.append(val)
         return cmd_list
     else:
         return None
@@ -406,8 +408,8 @@ layout = [
 
 def main():
     # change dir for FileBrowse()
-    if path.exists(default_dir):
-        chdir(default_dir)
+    if path.exists(default_browse_dir):
+        chdir(default_browse_dir)
     elif path.exists(local_root_dir):
         chdir(local_root_dir)
     # Create window
@@ -422,18 +424,13 @@ def main():
             window["-ERROR-FIELD-"].update("")
             # run the command with cli arguments based on changes
             cmd_list = get_cmd_list(values, window)
+            print(cmd_list)
             if cmd_list:
-                print(cmd_list)
-                print("execute")
                 run(cmd_list)
                 break
-            else:
-                print("tocim!")
         elif event == "Update conf":
-            # TODO: FIX UDATE CONF
             # update sync_conf, but do not run
             update_conf(values, window)
-            print(f"\033[1;32mConfiguration successfully updated!\033[0m")
             break
         elif event == "Update conf & Run":
             # update sync_conf
@@ -449,7 +446,7 @@ def main():
         elif event in list(fields.keys()):
             if event == "-DTF-":
                 window["-DTEX-"].update(
-                    f"(example: {datetime(2000, 12, 24, 12, 53, 7).strftime(values['-DTF-'])})"
+                    f"(example: {datetime(2012, 12, 24, 12, 53, 7).strftime(values['-DTF-'])})"
                 )
             if fields[event] != values[event]:
                 if event == "-RSYNC-OPT-":
@@ -477,7 +474,8 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"\033[1;31m{type(e).__name__}:\033[0m {e}")
+    main()
+    # try:
+    #     main()
+    # except Exception as e:
+    #     print(f"\033[1;31m{type(e).__name__}:\033[0m {e}")
