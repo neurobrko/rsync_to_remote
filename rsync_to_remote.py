@@ -43,7 +43,7 @@ if not path.exists(log_path):
 
 logging.basicConfig(
     format="%(levelname)s: [:%(lineno)d] %(message)s",
-    datefmt=sc.date_format,
+    datefmt=date_format,
     filename=path.join(log_path, log_filename),
     level=logging.INFO,
 )
