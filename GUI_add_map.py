@@ -1,6 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from sync_conf import host, username, port, local_root_dir
 from GUI_rsync_to_remote import get_map_keys
 from subprocess import run, PIPE, STDOUT
 from os import path, chdir
@@ -8,30 +7,37 @@ import PySimpleGUI as sg
 import yaml
 import re
 
+# define paths
 script_root = path.dirname(path.realpath(__file__))
-yaml_file = path.join(script_root, "file_map.yaml")
+filemap_file = path.join(script_root, "file_map.yaml")
+conf_file = path.join(script_root, "sync_conf.yaml")
 icon_file = path.join(script_root, "icons/add_map.png")
-
 find_path = "/"
 
-with open(yaml_file, "r") as f:
+# import configuration variables
+with open(conf_file, "r") as f:
+    config = yaml.safe_load(f)
+
+# load variables
+# create empty variables just for pyCharm not to raise undefined variable warning.
+host = username = port = local_root_dir = rsync_options = ""
+sg_theme = DEFTC = CHANGETC = ERRTC = ""
+vars().update(config["rsync"])
+vars().update(config["gui"])
+
+# load file pair map
+with open(filemap_file, "r") as f:
     file_map = yaml.safe_load(f)
 
 map_keys = get_map_keys(file_map)
 
-# file = "drivers/runtime/systemd-services/virl2-initial-setup.py"
-# file = "core/simple_core/controller/events.py"
-
-sg.theme("DarkGray11")
+sg.theme(sg_theme)
 input_text_fields = {
     "-HOST-": host,
     "-USER-": username,
     "-PORT-": port,
     "-FIND-PATH-": find_path,
 }
-DEFTC = "lightgrey"
-CHANGETC = "red"
-ERRTC = "yellow"
 
 layout = [
     [sg.Text("Remote settings:")],
@@ -180,12 +186,15 @@ def update_yaml(project, src, trg):
         file_map[project] = {next_key: [src, trg]}
     else:
         file_map[project][next_key] = [src, trg]
-    with open(yaml_file, "w") as f:
+    with open(filemap_file, "w") as f:
         yaml.dump(file_map, f, sort_keys=False)
 
 
 def main():
-    chdir(local_root_dir)
+    if path.exists(local_root_dir):
+        chdir(local_root_dir)
+    else:
+        chdir(script_root)
     window = sg.Window("Set file paths for rsync_to_remote.py", layout, icon=icon_file)
 
     while True:

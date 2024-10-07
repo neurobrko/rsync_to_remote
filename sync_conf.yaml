@@ -1,0 +1,57 @@
+---
+# RSYNC SETTINGS
+rsync:
+  host: 10.122.58.49
+  username: root
+  # when editing port, always edit rsync option accordingly!
+  port: 13117
+  rsync_options:
+  - -rtvz
+  - --progress
+  - -e
+  - ssh -p 13117
+  # local_root_dir should ALWAYS contain valid path,
+  # BUT if empty, must be ""
+  local_root_dir: "/home/marpauli/code/cisco/_SIMPLE"
+
+# SCRIPT SETTINGS
+script:
+  # set 0 to skip check
+  VM_check_timeout: 0
+  result_timeout: 0
+  # specify dir to start browsing from
+  # local_root_dir is used if empty, if LRD empty GUI uses script dir
+  default_browse_dir: "/home/marpauli/code/cisco/_SIMPLE"
+  date_format: '%Y-%m-%d %H:%M:%S'
+
+# SYNC CONFIG
+sync:
+  # sync all files in <file_map> value: true/false
+  sync_all: false
+  # sync all files from specified project, null for None
+  project: null
+  # list of file pairs to sync
+  # WARNING: Must be list even with zero or single item!
+  file_keys: [99]
+  # INFO: <sync_all> overrides <project>, <project> overrides <file_keys>
+
+# CLI OUTPUT FORMATTING
+colors:
+  GN: "\e[0;32m"  # green normal
+  GB: "\e[1;32m"  # green bold
+  RN: "\e[0;31m"  # red normal
+  RB: "\e[1;31m"  # red bold
+  CN: "\e[0;36m"  # cyan normal
+  CB: "\e[1;36m"  # cyan bold
+  WU: "\e[4;37m"  # white underline
+  BLD: "\e[1m"    # bold
+  UND: "\e[4m"    # underline
+  RST: "\e[0m"    # reset formatting
+
+# GUI CONFIG
+gui:
+  sg_theme: DarkGrey11
+  DEFTC: lightgrey
+  CHANGETC: red
+  ERRTC: yellow
+...

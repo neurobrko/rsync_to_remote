@@ -1,6 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import sync_conf as sc
 from subprocess import run, PIPE
 from error_handler import RepeatingKeyError, BadFileSyncDefinition
 import argparse
@@ -10,10 +9,30 @@ from time import strftime, sleep
 from pytimedinput import timedKey
 import yaml
 
+# define paths
+script_root = path.dirname(path.realpath(__file__))
+conf_file = path.join(script_root, "sync_conf_test.yaml")
+filemap_file = path.join(script_root, "file_map.yaml")
+
+# import configuration variables
+with open(conf_file, "r") as f:
+    config = yaml.safe_load(f)
+
+# remove GUI variables
+config.pop("gui")
+
+# set empty variable. Otherwise, pyCharm will report unresolved reference :(
+host = username = port = local_root_dir = ""
+rsync_options = []
+VM_check_timeout = result_timeout = default_dir = date_format = ""
+project = file_keys = ""
+sync_all = False
+GN = GB = RN = RB = CN = CB = WU = BLD = UND = RST = ""
+for vals in config.values():
+    vars().update(vals)
+
 # invoke logger
 LOGGER = logging.getLogger()
-# TODO: delete log files older then x days.
-script_root = path.dirname(path.realpath(__file__))
 
 log_filename = f"rsync_to_remote-{strftime('%y%m%d')}.log"
 log_path = path.join(script_root, "log")
@@ -32,22 +51,22 @@ logging.basicConfig(
 # TODO: think about adding dict for rsync settings to use it as set of rules invoked by dict key. \
 #  It would probably mean seriously rebuilding this script and GUI...
 # OVERRIDE SETTINGS FOR TESTING
-# sc.host = "localhost"
-# sc.username = "marpauli"
-# sc.port = "22"
-# sc.rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {sc.port}"]
-# sc.local_root_dir = ""
-# sc.project = "test"
+# host = "localhost"
+# username = "marpauli"
+# port = "22"
+# rsync_options = ["-rtvz", "--progress", "-e", f"ssh -p {port}"]
+# local_root_dir = ""
+# project = "test"
 
 # set-up arg parser
 ap = argparse.ArgumentParser()
 ap.add_argument("-r", "--remote", help="Remote host for synchronization")
 ap.add_argument("-u", "--username", help="Remote username")
-ap.add_argument("-ha", "--host_address", help="Host address part of IP")
 ap.add_argument("-s", "--ssh_port", help="SSH port")
 ap.add_argument("-l", "--local_root_dir", help="Root directory for source files")
 ap.add_argument("-vt", "--vm_timeout", help="Timeout to check VM info")
 ap.add_argument("-rt", "--result_timeout", help="Timeout to check script output")
+ap.add_argument("-d", "--date_format", help="Timestamp format for logging")
 ap.add_argument(
     "-a", "--sync_all", help="Sync all files from all projects", action="store_true"
 )
@@ -60,31 +79,29 @@ args = ap.parse_args()
 
 # override settings, if set from cli
 if args.remote:
-    sc.host = args.remote
+    host = args.remote
 if args.username:
-    sc.username = args.username
-if args.host_address:
-    sc.host_address = args.host_address
+    username = args.username
 if args.ssh_port:
-    sc.port = args.ssh_port
+    port = args.ssh_port
     # if port is specified in CLI, alter rsync_options!
-    sc.rsync_options[-1] = f"ssh -p {sc.port}"
+    rsync_options[-1] = f"ssh -p {port}"
 if args.local_root_dir:
-    sc.local_root_dir = args.local_root_dir
+    local_root_dir = args.local_root_dir
 if args.vm_timeout:
-    sc.VM_check_timeout = int(args.vm_timeout)
+    VM_check_timeout = int(args.vm_timeout)
 if args.result_timeout:
-    sc.result_timeout = int(args.result_timeout)
+    result_timeout = int(args.result_timeout)
+if args.date_format:
+    date_format = args.date_format
 if args.sync_all:
-    sc.sync_all = True
+    sync_all = True
 if args.project:
-    sc.project = args.project
+    project = args.project
 if args.files:
-    sc.file_keys = [int(file) for file in args.files.split(",")]
+    file_keys = [int(file) for file in args.files.split(",")]
 
-yaml_file = path.join(script_root, "file_map.yaml")
-
-with open(yaml_file, "r") as f:
+with open(filemap_file, "r") as f:
     file_map = yaml.safe_load(f)
 
 
@@ -104,53 +121,51 @@ def get_project_maps(filemap: dict, project: str) -> dict:
     return filemap[project]
 
 
-def run_cmd(cmd_list: list):
-    run(cmd_list)
-
-
 def run_rsync(filepaths: list, counter: int):
-    print(f"{sc.GN}[{counter}]{sc.RST}")
-    print(f"{sc.CB}local file: {sc.RST}{sc.WU}{filepaths[0]}{sc.RST}")
-    print(f"{sc.CB}remote file: {sc.RST}{sc.WU}{filepaths[1]}{sc.RST}")
+    # global rsync_options
+    print(f"{GN}[{counter}]{RST}")
+    print(f"{CB}local file: {RST}{WU}{filepaths[0]}{RST}")
+    print(f"{CB}remote file: {RST}{WU}{filepaths[1]}{RST}")
     to_log = f"\n*_* [{counter}] *_*\nsource: {filepaths[0]}\ntarget: {filepaths[1]}\nrsync output:"
     try:
         output = run(
             ["rsync"]
-            + sc.rsync_options
+            + rsync_options
             + [
-                path.join(sc.local_root_dir, filepaths[0]),
-                f"{sc.username}@{sc.host}:{filepaths[1]}",
+                path.join(local_root_dir, filepaths[0]),
+                f"{username}@{host}:{filepaths[1]}",
             ],
             stdout=PIPE,
-        ).stdout.decode("utf-8")
+            text=True,
+        ).stdout
         to_log = "\n".join([to_log, output])
         LOGGER.info(to_log)
         counter += 1
         return counter
     except Exception as err:
-        print(f"Something went wrong!{err}")
-        to_log = "\n".join([to_log, err])
+        print(f"{RB}Something went wrong! {err}{RST}")
+        # to_log = "\n".join([to_log, err])
     LOGGER.info(to_log)
 
 
 def synchronize_files(all_maps):
     # decide what to sync based on settings
-    print(all_maps)
-    if sc.sync_all:
+    if sync_all:
+
         i = 1
         for paths in all_maps.values():
             i = run_rsync(paths, i)
         return i
-    elif sc.project:
-        file_maps = get_project_maps(file_map, sc.project)
+    elif project:
+        file_maps = get_project_maps(file_map, project)
         i = 1
         for paths in file_maps.values():
             # print(paths)
             i = run_rsync(paths, i)
         return i
-    elif len(sc.file_keys) > 0:
+    elif len(file_keys) > 0:
         i = 1
-        for key in sc.file_keys:
+        for key in file_keys:
             i = run_rsync(all_maps[key], i)
         return i
     else:
@@ -158,9 +173,9 @@ def synchronize_files(all_maps):
 
 
 def main():
-    print("".join([sc.BLD, "> Sync files to remote VM <".center(80, "="), sc.RST]))
+    print("".join([BLD, "> Sync files to remote VM <".center(80, "="), RST]))
     LOGGER.info("> SYNC START <".center(50, "="))
-    LOGGER.info(f"timestamp: {strftime('%Y-%m-%d %H:%M:%S')}")
+    LOGGER.info(f"timestamp: {strftime(date_format)}")
     # Check for repeating keys in file map projects
     try:
         all_maps = check_map_keys(file_map)
@@ -172,22 +187,22 @@ def main():
         exit()
 
     # display info about VM
-    print(f"{sc.BLD}ssh: {sc.RB}{sc.username}@{sc.host}:{sc.port}{sc.RST}")
-    LOGGER.info(f"ssh: {sc.host}:{sc.port}")
+    print(f"{BLD}ssh: {RB}{username}@{host}:{port}{RST}")
+    LOGGER.info(f"ssh: {host}:{port}")
     print("Fetching remote hostname...")
     hostname = run(
-        ["ssh", "-p", f"{sc.port}", f"{sc.username}@{sc.host}", "echo", "$HOSTNAME"],
+        ["ssh", "-p", f"{port}", f"{username}@{host}", "echo", "$HOSTNAME"],
         stdout=PIPE,
     ).stdout.decode("utf-8")
-    print(f"{sc.BLD}remote hostname: {sc.RB}{hostname}{sc.RST}")
+    print(f"{BLD}remote hostname: {RB}{hostname}{RST}")
     LOGGER.info(f"remote hostname: {hostname.strip()}")
 
     # give user few seconds to check VM settings
     # TODO: add countdown
-    if sc.VM_check_timeout:
+    if VM_check_timeout:
         user_text, timed_out = timedKey(
-            f"Correct VM? (Wait for {sc.VM_check_timeout} s.) [y/n]: ",
-            timeout=sc.VM_check_timeout,
+            f"Correct VM? (Wait for {VM_check_timeout} s.) [y/n]: ",
+            timeout=VM_check_timeout,
             allowCharacters="yYnN",
         )
         if timed_out:
@@ -206,20 +221,21 @@ def main():
     else:
         i = synchronize_files(all_maps)
 
-    print(f"{sc.BLD}Synced file(s) count: {sc.RST}{sc.RB}{i-1}{sc.RST}")
+    print(f"{BLD}\nSynced file(s) count: {RST}{RB}{i-1}{RST}\n")
     LOGGER.info(f"\nSynced file(s) count: {i-1}")
     LOGGER.info("".join(["> SYNC END <".center(50, "="), "\n\n"]))
 
-    if sc.result_timeout:
-        for x in range(sc.result_timeout):
+    if result_timeout:
+        for x in range(result_timeout):
             print(
-                f"{sc.RB}Press Ctrl+C to exit or script will exit in: {(sc.result_timeout - x)} s...{sc.RST}",
+                f"{RB}Press Ctrl+C to exit or script will exit in: {(result_timeout - x)} s...{RST}",
                 end=" \r",
             )
             sleep(1)
-    print(f"{sc.GB}GoodBye!{sc.RST}", " " * 70)
+    print(f"{GB}GoodBye!{RST}", " " * 70)
     sleep(1)
 
 
 if __name__ == "__main__":
+    path.join(script_root, "log", log_filename)
     main()
