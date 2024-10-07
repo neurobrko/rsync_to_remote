@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# python env for production:
+# /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12
+
 from GUI_rsync_to_remote import get_map_keys
 from subprocess import run, PIPE, STDOUT
 from os import path, chdir
@@ -10,7 +13,7 @@ import re
 # define paths
 script_root = path.dirname(path.realpath(__file__))
 filemap_file = path.join(script_root, "file_map.yaml")
-conf_file = path.join(script_root, "sync_conf_test.yaml")
+conf_file = path.join(script_root, "sync_conf.yaml")
 icon_file = path.join(script_root, "icons/add_map.png")
 find_path = "/"
 

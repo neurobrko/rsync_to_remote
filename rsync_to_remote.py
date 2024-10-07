@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# python env for production:
+# /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12
+
 from subprocess import run, PIPE
 from error_handler import RepeatingKeyError, BadFileSyncDefinition
 import argparse
@@ -11,7 +14,7 @@ import yaml
 
 # define paths
 script_root = path.dirname(path.realpath(__file__))
-conf_file = path.join(script_root, "sync_conf_test.yaml")
+conf_file = path.join(script_root, "sync_conf.yaml")
 filemap_file = path.join(script_root, "file_map.yaml")
 
 # import configuration variables
