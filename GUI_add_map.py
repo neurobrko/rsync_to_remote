@@ -238,7 +238,7 @@ def main():
                                 window["-ERROR-FIELD-"].update(file_list[0])
                             else:
                                 window["-FILE-LIST-"].update(file_list)
-                                window["-TARGET-"].update(file_list)
+                                window["-TARGET-"].update(file_list[0])
                         case _:
                             window["-FILE-LIST-"].update(file_list)
             else:

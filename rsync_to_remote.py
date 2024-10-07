@@ -122,6 +122,7 @@ def get_project_maps(filemap: dict, project: str) -> dict:
 
 
 def run_rsync(filepaths: list, counter: int):
+    # TODO: stderr to log!!!
     # global rsync_options
     print(f"{GN}[{counter}]{RST}")
     print(f"{CB}local file: {RST}{WU}{filepaths[0]}{RST}")
@@ -234,8 +235,8 @@ def main():
             sleep(1)
     print(f"{GB}GoodBye!{RST}", " " * 70)
     sleep(1)
+    exit()
 
 
 if __name__ == "__main__":
-    path.join(script_root, "log", log_filename)
     main()
