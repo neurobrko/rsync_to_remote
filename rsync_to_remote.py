@@ -129,7 +129,7 @@ def run_rsync(filepaths: list, counter: int):
     print(f"{CB}remote file: {RST}{WU}{filepaths[1]}{RST}")
     to_log = f"\n*_* [{counter}] *_*\nsource: {filepaths[0]}\ntarget: {filepaths[1]}\nrsync output:"
     try:
-        output = run(
+        result = run(
             ["rsync"]
             + rsync_options
             + [
@@ -137,15 +137,19 @@ def run_rsync(filepaths: list, counter: int):
                 f"{username}@{host}:{filepaths[1]}",
             ],
             stdout=PIPE,
+            stderr=PIPE,
             text=True,
-        ).stdout
-        to_log = "\n".join([to_log, output])
+        )
+        to_log = "\n".join([to_log, result.stdout])
         LOGGER.info(to_log)
         counter += 1
+        if result.stderr:
+            print(f"{RB}{result.stderr}{RST}")
+            LOGGER.warning(f"\n{result.stderr}")
+            counter -= 1
         return counter
     except Exception as err:
         print(f"{RB}Something went wrong! {err}{RST}")
-        # to_log = "\n".join([to_log, err])
     LOGGER.info(to_log)
 
 
@@ -222,7 +226,10 @@ def main():
     else:
         i = synchronize_files(all_maps)
 
-    print(f"{BLD}\nSynced file(s) count: {RST}{RB}{i-1}{RST}\n")
+    if i - 1 == 0:
+        print(f"{RB}\nSynced file(s) count: {i-1}{RST}\n")
+    else:
+        print(f"{BLD}\nSynced file(s) count: {RST}{CB}{i-1}{RST}\n")
     LOGGER.info(f"\nSynced file(s) count: {i-1}")
     LOGGER.info("".join(["> SYNC END <".center(50, "="), "\n\n"]))
 
