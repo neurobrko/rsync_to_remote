@@ -249,6 +249,7 @@ def main():
         if event == "-FILE-LIST-":
             window["-TARGET-"].update(values["-FILE-LIST-"][0])
         if event == "Add to project":
+            window["-ERROR-FIELD-"].update("")
             if values["-NEW-PROJECT-"] != "":
                 project = values["-NEW-PROJECT-"]
             else:
@@ -256,6 +257,8 @@ def main():
             if validate_changes(values, window):
                 if values["-SOURCE-"] == "":
                     window["-ERROR-FIELD-"].update("Empty source path!")
+                elif not path.exists(values["-SOURCE-"]):
+                    window["-ERROR-FIELD-"].update("Invalid source path!")
                 elif values["-TARGET-"] == "":
                     window["-ERROR-FIELD-"].update("Empty target path!")
                 else:
