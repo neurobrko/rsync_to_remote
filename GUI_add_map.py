@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12
 
 # python env for production:
 # /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12

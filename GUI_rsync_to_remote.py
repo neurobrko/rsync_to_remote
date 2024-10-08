@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12
 
 # python env for production:
 # /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12
@@ -11,11 +11,11 @@ from datetime import datetime
 import yaml
 
 # testing
-python_env = (
-    "/home/marpauli/.cache/pypoetry/virtualenvs/rsync-to-vm-yQGWRMhR-py3.12/bin/python"
-)
+# python_env = (
+#     "/home/marpauli/.cache/pypoetry/virtualenvs/rsync-to-vm-yQGWRMhR-py3.12/bin/python"
+# )
 # production
-# python_env = "/home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12"
+python_env = "/home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12"
 
 # define paths
 script_root = path.dirname(path.realpath(__file__))
