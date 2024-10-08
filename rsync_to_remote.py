@@ -125,7 +125,6 @@ def get_project_maps(filemap: dict, project: str) -> dict:
 
 
 def run_rsync(filepaths: list, counter: int):
-    # TODO: stderr to log!!!
     # global rsync_options
     print(f"{GN}[{counter}]{RST}")
     print(f"{CB}local file: {RST}{WU}{filepaths[0]}{RST}")
@@ -196,7 +195,7 @@ def main():
 
     # display info about VM
     print(f"{BLD}ssh: {RB}{username}@{host}:{port}{RST}")
-    LOGGER.info(f"ssh: {host}:{port}")
+    LOGGER.info(f"ssh: {username}@{host}:{port}")
     print("Fetching remote hostname...")
     hostname = run(
         ["ssh", "-p", f"{port}", f"{username}@{host}", "echo", "$HOSTNAME"],

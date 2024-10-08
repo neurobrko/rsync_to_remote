@@ -225,7 +225,9 @@ def validate_changes(vals, window):
         return_value = False
 
     if return_value:
-        return changed_values or None
+        return changed_values
+    else:
+        return None
 
 
 def update_conf(values, window):
@@ -424,7 +426,6 @@ def main():
         if event in ("Exit", sg.WIN_CLOSED):
             break
         elif event == "Run":
-            # TODO: Run w/o configuration change
             window["-ERROR-FIELD-"].update("")
             # run the command with cli arguments based on changes
             cmd_list = get_cmd_list(values, window)
