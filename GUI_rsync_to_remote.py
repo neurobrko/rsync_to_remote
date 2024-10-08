@@ -225,7 +225,9 @@ def validate_changes(vals, window):
         return_value = False
 
     if return_value:
-        return changed_values or None
+        return changed_values
+    else:
+        return None
 
 
 def update_conf(values, window):
@@ -382,11 +384,20 @@ layout = [
     ],
     [
         sg.Column(
-            config_line(
-                "file pair keys (space separated):",
-                " ".join([str(key) for key in file_keys]),
-                "-KEYS-",
-            )
+            [
+                [sg.Text("file pair keys (space separated):")],
+                [
+                    sg.InputText(
+                        size=(67, 1),
+                        key="-KEYS-",
+                        default_text=" ".join([str(key) for key in file_keys]),
+                        enable_events=True,
+                        text_color=DEFTC,
+                    ),
+                    sg.Push(),
+                    sg.Button("Get keys", key="-GET-KEYS-"),
+                ],
+            ]
         )
     ],
     [
@@ -407,6 +418,46 @@ layout = [
 ]
 
 
+def new_window_get_keys(parent_window):
+    layout_pop = [
+        [sg.Text("Select file pair keys:")],
+        [
+            (
+                [sg.Text(f"{proj}:")],
+                [
+                    (
+                        [
+                            sg.Checkbox(
+                                f" [{key}]",
+                                default=True if key in file_keys else False,
+                                key=int(key),
+                            )
+                        ],
+                        [sg.Text(f"src: {mapa[0]}")],
+                        [sg.Text(f"trg: {mapa[1]}")],
+                    )
+                    for key, mapa in maps.items()
+                ],
+            )
+            for proj, maps in file_map.items()
+        ],
+        [sg.Button("Insert"), sg.Push(), sg.Button("Close")],
+    ]
+
+    window_pop = sg.Window("Select files to sync", layout_pop, icon=icon_file)
+    while True:
+        event_pop, values_pop = window_pop.read()
+        if event_pop in ("Close", sg.WIN_CLOSED):
+            break
+        if event_pop == "Insert":
+            insert_keys = []
+            for key, value in values_pop.items():
+                value and insert_keys.append(str(key))
+            parent_window["-KEYS-"].update(" ".join(insert_keys))
+            break
+    window_pop.close()
+
+
 def main():
     # change dir for FileBrowse()
     if path.exists(default_browse_dir):
@@ -424,7 +475,6 @@ def main():
         if event in ("Exit", sg.WIN_CLOSED):
             break
         elif event == "Run":
-            # TODO: Run w/o configuration change
             window["-ERROR-FIELD-"].update("")
             # run the command with cli arguments based on changes
             cmd_list = get_cmd_list(values, window)
@@ -448,6 +498,8 @@ def main():
                 ]
             )
             break
+        elif event == "-GET-KEYS-":
+            new_window_get_keys(window)
         elif event in list(fields.keys()):
             if event == "-DTF-":
                 window["-DTEX-"].update(
