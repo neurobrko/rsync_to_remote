@@ -3,3 +3,4 @@
 log/
 /test_rsync/
 /production/
+__pycache__
