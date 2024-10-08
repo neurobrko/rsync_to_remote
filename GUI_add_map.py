@@ -254,11 +254,13 @@ def main():
             else:
                 project = values["-PROJECT-"]
             if validate_changes(values, window):
-                if path.exists(values["-SOURCE-"]):
+                if values["-SOURCE-"] == "":
+                    window["-ERROR-FIELD-"].update("Empty source path!")
+                elif values["-TARGET-"] == "":
+                    window["-ERROR-FIELD-"].update("Empty target path!")
+                else:
                     update_yaml(project, values["-SOURCE-"], values["-TARGET-"])
                     break
-                else:
-                    window["-ERROR-FIELD-"].update("Invalid source path!")
 
     window.close()
 

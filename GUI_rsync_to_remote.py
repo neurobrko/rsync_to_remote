@@ -259,7 +259,7 @@ def get_cmd_list(values, window):
                 continue
             for val in vals[-2:]:
                 val and cmd_list.append(val)
-        return cmd_list
+        return cmd_list, changes
     else:
         return None
 
@@ -477,27 +477,32 @@ def main():
         elif event == "Run":
             window["-ERROR-FIELD-"].update("")
             # run the command with cli arguments based on changes
-            cmd_list = get_cmd_list(values, window)
+            cmd_list, changes = get_cmd_list(values, window)
             if cmd_list:
+                if len(changes) == 0:
+                    window["-ERROR-FIELD-"].update(
+                        "Running with unchanged configuration..."
+                    )
+                    window.refresh()
                 run(cmd_list)
                 break
         elif event == "Update conf":
             # update sync_conf, but do not run
             result = update_conf(values, window)
-
             if result:
                 break
         elif event == "Update conf & Run":
             # update sync_conf
-            update_conf(values, window)
+            result = update_conf(values, window)
             # run using new settings
-            run(
-                [
-                    python_env,
-                    rsync_file,
-                ]
-            )
-            break
+            if result:
+                run(
+                    [
+                        python_env,
+                        rsync_file,
+                    ]
+                )
+                break
         elif event == "-GET-KEYS-":
             new_window_get_keys(window)
         elif event in list(fields.keys()):
