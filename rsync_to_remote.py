@@ -44,8 +44,9 @@ log_path = path.join(script_root, "log")
 if not path.exists(log_path):
     mkdir(log_path)
 
+# format="%(levelname)s: [:%(lineno)d] %(message)s",
 logging.basicConfig(
-    format="%(levelname)s: [:%(lineno)d] %(message)s",
+    format="%(message)s",
     datefmt=date_format,
     filename=path.join(log_path, log_filename),
     level=logging.INFO,

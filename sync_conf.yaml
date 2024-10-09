@@ -1,13 +1,13 @@
 rsync:
-  host: 10.122.58.49
-  username: root
-  port: 13117
+  host: localhost
+  username: marpauli
+  port: 22
   rsync_options:
   - -rtvz
   - --progress
   - -e
-  - ssh -p 13117
-  local_root_dir: /home/marpauli/code/cisco/_SIMPLE
+  - ssh -p 22
+  local_root_dir: ''
 script:
   VM_check_timeout: 0
   result_timeout: 0
@@ -15,7 +15,7 @@ script:
   date_format: '%Y-%m-%d %H:%M:%S'
 sync:
   sync_all: false
-  project: null
+  project: test
   file_keys:
   - 98
   - 99
