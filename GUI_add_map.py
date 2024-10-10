@@ -198,7 +198,12 @@ def main():
         chdir(local_root_dir)
     else:
         chdir(script_root)
-    window = sg.Window("Set file paths for rsync_to_remote.py", layout, icon=icon_file)
+    window = sg.Window(
+        "Set file paths for rsync_to_remote.py",
+        layout,
+        icon=icon_file,
+        location=(900, 135),
+    )
 
     while True:
         event, values = window.read()

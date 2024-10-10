@@ -54,13 +54,13 @@ def get_map_keys(filemap):
 def validate_changes(vals, window):
     """Get changed values and validate them"""
     changed_values = {}
-    return_value = True
+    is_valid = True
 
     if vals["-HOST-"] != host:
         if vals["-HOST-"] != "localhost":
             if len(host_ip := vals["-HOST-"].split(".")) != 4:
                 window["-ERROR-FIELD-"].update("Invalid host!")
-                return_value = False
+                is_valid = False
             else:
                 try:
                     [int(add) for add in host_ip]
@@ -72,7 +72,7 @@ def validate_changes(vals, window):
                     ]
                 except:
                     window["-ERROR-FIELD-"].update("Invalid host!")
-                    return_value = False
+                    is_valid = False
         else:
             changed_values["host"] = [
                 "rsync",
@@ -85,7 +85,7 @@ def validate_changes(vals, window):
         pattern = re.compile(r"[a-zA-Z0-9]+")
         if not re.fullmatch(pattern, vals["-USERNAME-"]):
             window["-ERROR-FIELD-"].update("Invalid username!")
-            return_value = False
+            is_valid = False
         else:
             changed_values["username"] = [
                 "rsync",
@@ -104,7 +104,7 @@ def validate_changes(vals, window):
             ]
         except:
             window["-ERROR-FIELD-"].update("Invalid port number!")
-            return_value = False
+            is_valid = False
 
     # specifying -e option is kind of a brute force, but working for this case
     global rsync_options
@@ -122,7 +122,7 @@ def validate_changes(vals, window):
             ]
         except:
             window["-ERROR-FIELD-"].update("Invalid rsync arguments!")
-            return_value = False
+            is_valid = False
 
     if vals["-LRD-"] != local_root_dir:
         if path.exists(vals["-LRD-"]) or vals["-LRD-"] == "":
@@ -138,7 +138,7 @@ def validate_changes(vals, window):
             ]
         else:
             window["-ERROR-FIELD-"].update("Invalid path to local root directory!")
-            return_value = False
+            is_valid = False
     if vals["-VCT-"] != str(VM_check_timeout):
         try:
             int(vals["-VCT-"])
@@ -150,7 +150,7 @@ def validate_changes(vals, window):
             ]
         except:
             window["-ERROR-FIELD-"].update("Invalid VM check timeout!")
-            return_value = False
+            is_valid = False
 
     if vals["-RCT-"] != str(result_timeout):
         try:
@@ -163,7 +163,7 @@ def validate_changes(vals, window):
             ]
         except:
             window["-ERROR-FIELD-"].update("Invalid Result check timeout!")
-            return_value = False
+            is_valid = False
 
     if vals["-DTF-"] != date_format:
         # validation Mark I Eyeball at GUI
@@ -174,7 +174,7 @@ def validate_changes(vals, window):
             window["-ERROR-FIELD-"].update(
                 "Something went horribly wrong with checkbox!"
             )
-            return_value = False
+            is_valid = False
         else:
             changed_values["sync_all"] = [
                 "sync",
@@ -205,12 +205,12 @@ def validate_changes(vals, window):
             window["-ERROR-FIELD-"].update(
                 "This setting would yield nothing to synchronize!"
             )
-            return_value = False
+            is_valid = False
         elif (new_keys := [int(key) for key in vals["-KEYS-"].split()]) != file_keys:
             for key in new_keys:
                 if key not in map_keys:
                     window["-ERROR-FIELD-"].update("Supplied key not in file map!")
-                    return_value = False
+                    is_valid = False
                     # continue
                 else:
                     changed_values["file_keys"] = [
@@ -222,25 +222,23 @@ def validate_changes(vals, window):
 
     except:
         window["-ERROR-FIELD-"].update("Invalid file keys!")
-        return_value = False
+        is_valid = False
 
-    if return_value:
-        return changed_values
-    else:
-        return None
+    return changed_values or None, is_valid
 
 
 def update_conf(values, window):
     """Update configuration file with changed values"""
-    changes = validate_changes(values, window)
-    if not changes:
-        window["-ERROR-FIELD-"].update("There were no changes in configuration!")
-    else:
-        for change, ch_list in changes.items():
-            config[ch_list[0]][change] = ch_list[1]
-        with open(conf_file, "w") as file:
-            yaml.dump(config, file, sort_keys=False)
-    return changes
+    changes, is_valid = validate_changes(values, window)
+    if is_valid:
+        if not changes:
+            window["-ERROR-FIELD-"].update("There were no changes in configuration!")
+        else:
+            for change, ch_list in changes.items():
+                config[ch_list[0]][change] = ch_list[1]
+            with open(conf_file, "w") as file:
+                yaml.dump(config, file, sort_keys=False)
+        return changes
 
 
 def get_cmd_list(values, window):
@@ -248,18 +246,19 @@ def get_cmd_list(values, window):
     Return list of arguments for subprocess.run()
     to run rsync_to_remote.py with modified arguments
     """
-    changes = validate_changes(values, window)
-    if type(changes) == dict:
+    changes, is_valid = validate_changes(values, window)
+    if is_valid:
         cmd_list = [
             python_env,
             rsync_file,
         ]
-        for k, vals in changes.items():
-            if k == "rsync_options":
-                continue
-            for val in vals[-2:]:
-                val and cmd_list.append(val)
-        return cmd_list, changes
+        if changes:
+            for k, vals in changes.items():
+                if k == "rsync_options":
+                    continue
+                for val in vals[-2:]:
+                    val and cmd_list.append(val)
+        return cmd_list
     else:
         return None
 
@@ -444,7 +443,9 @@ def new_window_get_keys(parent_window):
         [sg.Button("Insert"), sg.Push(), sg.Button("Close")],
     ]
 
-    window_pop = sg.Window("Select files to sync", layout_pop, icon=icon_file)
+    window_pop = sg.Window(
+        "Select files to sync", layout_pop, icon=icon_file, location=(1100, 180)
+    )
     while True:
         event_pop, values_pop = window_pop.read()
         if event_pop in ("Close", sg.WIN_CLOSED):
@@ -466,7 +467,10 @@ def main():
         chdir(local_root_dir)
     # Create window
     window = sg.Window(
-        "Configure and/or run rsync_to_remote.py", layout, icon=icon_file
+        "Configure and/or run rsync_to_remote.py",
+        layout,
+        icon=icon_file,
+        location=(1200, 135),
     )
     # Create an event loop
     while True:
@@ -477,9 +481,9 @@ def main():
         elif event == "Run":
             window["-ERROR-FIELD-"].update("")
             # run the command with cli arguments based on changes
-            cmd_list, changes = get_cmd_list(values, window)
+            cmd_list = get_cmd_list(values, window)
             if cmd_list:
-                if len(changes) == 0:
+                if len(cmd_list) == 2:
                     window["-ERROR-FIELD-"].update(
                         "Running with unchanged configuration..."
                     )

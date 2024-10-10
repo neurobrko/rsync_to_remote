@@ -26,7 +26,7 @@ if not path.exists(log_file):
         [sg.Text("Log file does not exist!", text_color=ERRTC, justification="center")],
         [sg.Push(), sg.Button("Exit"), sg.Push()],
     ]
-    window_warn = sg.Window("Error!", layout_warn)
+    window_warn = sg.Window("Error!", layout_warn, location=(1600, 135))
     while True:
         event = window_warn.read()[0]
         if event in ("Exit", sg.WIN_CLOSED):
@@ -49,7 +49,7 @@ layout = [
     [sg.Button("View complete log", key="-VIEW-LOG-"), sg.Push(), sg.Button("Exit")],
 ]
 
-window = sg.Window("Last log", layout)
+window = sg.Window("Last log", layout, location=(1000, 135))
 
 while True:
     event = window.read()[0]
