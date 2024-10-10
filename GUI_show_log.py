@@ -51,7 +51,7 @@ layout = [
 ]
 
 
-window = sg.Window("Last log", layout, finalize=True)
+window = sg.Window("Last log", layout, finalize=True, icon="icons/view_log.png")
 window.move((pos := get_center(window))[0], pos[1])
 while True:
     event = window.read()[0]
