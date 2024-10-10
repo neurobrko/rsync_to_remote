@@ -3,7 +3,7 @@
 # python env for production:
 # /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12
 
-from GUI_rsync_to_remote import get_map_keys
+from GUI_rsync_to_remote import get_map_keys, get_center
 from subprocess import run, PIPE, STDOUT
 from os import path, chdir
 import PySimpleGUI as sg
@@ -199,11 +199,9 @@ def main():
     else:
         chdir(script_root)
     window = sg.Window(
-        "Set file paths for rsync_to_remote.py",
-        layout,
-        icon=icon_file,
-        location=(900, 135),
+        "Set file paths for rsync_to_remote.py", layout, icon=icon_file, finalize=True
     )
+    window.move((pos := get_center(window))[0], pos[1])
 
     while True:
         event, values = window.read()

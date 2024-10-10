@@ -5,9 +5,10 @@
 
 import PySimpleGUI as sg
 from os import path
-from time import strftime
+from time import strftime, sleep
 import yaml
 from subprocess import run
+from GUI_rsync_to_remote import get_center
 
 script_root = path.dirname(path.realpath(__file__))
 conf_file = path.join(script_root, "sync_conf.yaml")
@@ -49,8 +50,9 @@ layout = [
     [sg.Button("View complete log", key="-VIEW-LOG-"), sg.Push(), sg.Button("Exit")],
 ]
 
-window = sg.Window("Last log", layout, location=(1000, 135))
 
+window = sg.Window("Last log", layout, finalize=True)
+window.move((pos := get_center(window))[0], pos[1])
 while True:
     event = window.read()[0]
     if event in ("Exit", sg.WIN_CLOSED):

@@ -9,6 +9,7 @@ from os import path, chdir
 from subprocess import run
 from datetime import datetime
 import yaml
+import screeninfo
 
 # testing
 python_env = (
@@ -42,6 +43,18 @@ for vals in config.values():
 # load file pair map
 with open(filemap_file, "r") as f:
     file_map = yaml.safe_load(f)
+
+
+def get_center(win) -> tuple[int, int]:
+    m_size = ""
+    for _ in screeninfo.get_monitors():
+        if _.is_primary:
+            m_size = _
+    w_size = win.size
+    x = int(m_size.x + m_size.width / 2 - w_size[0] / 2)
+    y = int(m_size.y + m_size.height / 2 - w_size[1] / 2)
+
+    return x, y
 
 
 def get_map_keys(filemap):
@@ -444,8 +457,10 @@ def new_window_get_keys(parent_window):
     ]
 
     window_pop = sg.Window(
-        "Select files to sync", layout_pop, icon=icon_file, location=(1100, 180)
+        "Select files to sync", layout_pop, icon=icon_file, finalize=True
     )
+    window_pop.move((pos := get_center(window_pop))[0], pos[1])
+
     while True:
         event_pop, values_pop = window_pop.read()
         if event_pop in ("Close", sg.WIN_CLOSED):
@@ -467,11 +482,9 @@ def main():
         chdir(local_root_dir)
     # Create window
     window = sg.Window(
-        "Configure and/or run rsync_to_remote.py",
-        layout,
-        icon=icon_file,
-        location=(1200, 135),
+        "Configure and/or run rsync_to_remote.py", layout, icon=icon_file, finalize=True
     )
+    window.move((pos := get_center(window))[0], pos[1])
     # Create an event loop
     while True:
         event, values = window.read()
