@@ -5,9 +5,10 @@
 
 import PySimpleGUI as sg
 import re
-from os import path, chdir
+from os import path, chdir, stat, listdir, remove
 from subprocess import run
 from datetime import datetime
+from time import time
 import yaml
 import screeninfo
 
@@ -24,12 +25,21 @@ conf_file = path.join(script_root, "sync_conf.yaml")
 rsync_file = path.join(script_root, "rsync_to_remote.py")
 filemap_file = path.join(script_root, "file_map.yaml")
 icon_file = path.join(script_root, "icons/settings.png")
+log_dir = path.join(script_root, "log")
 
 
 def read_yaml(file):
     with open(file, "r") as f:
         content = yaml.safe_load(f)
     return content
+
+
+# delete log older than 3 days (72 hours to be exact)
+[
+    remove(del_logfile)
+    for logfile in listdir(log_dir)
+    if stat((del_logfile := path.join(log_dir, logfile))).st_mtime < time() - 3 * 86400
+]
 
 
 # import configuration variables
