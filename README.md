@@ -6,9 +6,9 @@ mail: elvis@elvis.sk
 its action to console and logs them.**
 
 **IMPORTANT:** 
-See section _Instalation and usage_ for minimum mandatory steps to get scripts working properly.
+See section _Installation and usage_ for minimum mandatory steps to get scripts working properly.
 
-_**GUI_sync_suite.py**_ - wrapper script to get all the functionality in one place
+_**GUI_sync_suite.py**_ - wrapper script to get all the functionality in one place (SySu)
 
 _**rsync_to_remote.py**_ - standalone CLI script to perform synchronization. Configuration is loaded from _sync_conf.yaml_, 
 but can be altered using CLI arguments. See _rsync_to_remote.py -h_.
@@ -30,6 +30,8 @@ Use Poetry or venv or install requirements directly onto your system (not recomm
 
 _Tip for pyCharm:_ put path to your Poetry/venv interpreter directly to shabang, so you can run scripts using External Tools
 and add them to any panel.
+
+**For possible use scenario see end of this document.**
 
 ### _sync_conf.yaml_
 File contains configuration used for running _rsync_to_remote.py_ and some settings for GUI. Most of the settings can
@@ -70,5 +72,40 @@ script parent dir is used
 ### _file_map.yaml_
 **format:** {project: [source/path, target/path]}
 
+### Possible installation scenario ###
+- clone repo, create venv, install requirements
+```
+> mkdir /your/repo/dir
+> cd /your/repo/dir
+> git clone https://github.com/neurobrko/rsync_to_remote.git .
+> python3 -m venv .venv
+> source .venv/bin/python3
+(.venv) > pip install -r requirements.txt
+(.venv) > deactivate
+```
+- edit files and sync_conf.yaml
+  - change "shabang" in: (1) _GUI_add_map.py_, (2) _GUI_rsync_to_remote.py_, (3) _GUI_show_log.py_, (4) _rsync_to_remote.py_ to:\
+  `#!/your/repo/dir/.venv/bin/python3`
+  - in _GUI_rsync_to_remote.py_ change value of variable _python_env_ to:\
+  `"/your/repo/dir/.venv/bin/python3"`
+  - in _sync_conf.yaml_ change value of _text_editor_ in _gui_ section to your favourite yaml viewer. (In Win, Notepad should be OK.)
+  - create launcher/desktop shortcut/taskbar pin for command:\
+  `/your/repo/dir/.venv/bin/python3 /your/repo/dir/GUI_sync_suite.py`\
+    (To be honest, I have no idea how that's done on Windows.)
+  - Launch Sync Suite (SySU)
+  - hit 'Sync options' in SySu
+  - edit _local root dir_ to match your location of files you want to sync, then press _\<Update conf\>_
+     - you can also edit remote settings (_hostname_, _username_, _port_ and _rsync options_) 
+  - hit 'Add files to sync' in SySu
+  - _\<Browse\>_ to your source file or write it in directly
+  - if you set remote settings in previous step, you can use _\<Get target\>_ to obtain your target file, or write it in\
+    (It must be full path!)
+  - input name of your project and press _\<Add to project\>_
+  - hit 'Show file map' in SySu and remove all lines preceding your new project
+  - hit 'Instant sync' in SySU and enjoy! :)
+  - You can also add launchers for the scripts to your IDE. (I am executing _rsync_to_remote.py_ through terminal aplication from pyCharm, so I can see sync output in real time.)
+
+
 ### TODO:
 - [ ] add GUI remove map for file_map.yaml
+- [ ] change 'Instant sync' in SySU so it is launched via terminal, so you can see output script (Possible problem in Windows?)

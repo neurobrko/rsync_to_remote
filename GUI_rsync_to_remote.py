@@ -34,12 +34,14 @@ def read_yaml(file):
     return content
 
 
-# delete log older than 3 days (72 hours to be exact)
-[
-    remove(del_logfile)
-    for logfile in listdir(log_dir)
-    if stat((del_logfile := path.join(log_dir, logfile))).st_mtime < time() - 3 * 86400
-]
+# if log_dir existst delete log older than 3 days (72 hours to be exact)
+if path.exists(log_dir):
+    [
+        remove(del_logfile)
+        for logfile in listdir(log_dir)
+        if stat((del_logfile := path.join(log_dir, logfile))).st_mtime
+        < time() - 3 * 86400
+    ]
 
 
 # import configuration variables
