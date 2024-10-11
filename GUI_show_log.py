@@ -5,10 +5,9 @@
 
 import PySimpleGUI as sg
 from os import path
-from time import strftime, sleep
-import yaml
+from time import strftime
 from subprocess import run
-from GUI_rsync_to_remote import get_center
+from GUI_rsync_to_remote import get_center, read_yaml
 
 script_root = path.dirname(path.realpath(__file__))
 conf_file = path.join(script_root, "sync_conf.yaml")
@@ -16,11 +15,10 @@ log_filename = f"rsync_to_remote-{strftime('%y%m%d')}.log"
 log_file = path.join(script_root, "log", log_filename)
 log_viewer = "/usr/bin/gedit"
 
-with open(conf_file, "r") as f:
-    conf = yaml.safe_load(f)
-
+conf = read_yaml(conf_file)
 sg.theme(conf["gui"]["sg_theme"])
 ERRTC = conf["gui"]["ERRTC"]
+log_viewer = conf["gui"]["text_editor"]
 
 if not path.exists(log_file):
     layout_warn = [
@@ -46,7 +44,7 @@ for line in log_content[-3::-1]:
         break
 
 layout = [
-    [sg.Listbox(values=last_log, size=(100, len(last_log)))],
+    [sg.Listbox(values=last_log, size=(100, len(last_log)), font="Helvetica")],
     [sg.Button("View complete log", key="-VIEW-LOG-"), sg.Push(), sg.Button("Exit")],
 ]
 

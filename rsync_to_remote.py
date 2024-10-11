@@ -10,7 +10,7 @@ from os import path, mkdir
 import logging
 from time import strftime, sleep
 from pytimedinput import timedKey
-import yaml
+from GUI_rsync_to_remote import read_yaml
 
 # define paths
 script_root = path.dirname(path.realpath(__file__))
@@ -18,8 +18,7 @@ conf_file = path.join(script_root, "sync_conf.yaml")
 filemap_file = path.join(script_root, "file_map.yaml")
 
 # import configuration variables
-with open(conf_file, "r") as f:
-    config = yaml.safe_load(f)
+config = read_yaml(conf_file)
 
 # remove GUI variables
 config.pop("gui")
@@ -105,8 +104,7 @@ if args.project:
 if args.files:
     file_keys = [int(file) for file in args.files.split(",")]
 
-with open(filemap_file, "r") as f:
-    file_map = yaml.safe_load(f)
+file_map = read_yaml(filemap_file)
 
 
 def check_map_keys(filemap: dict) -> dict:

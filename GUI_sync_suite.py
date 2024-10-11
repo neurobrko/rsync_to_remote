@@ -11,7 +11,7 @@ from GUI_rsync_to_remote import get_center, read_yaml
 script_root = path.dirname(path.realpath(__file__))
 conf_file = path.join(script_root, "sync_conf.yaml")
 conf = read_yaml(conf_file)
-text_editor = "/usr/bin/gedit"
+text_editor = conf["gui"]["text_editor"]
 sg.theme(conf["gui"]["sg_theme"])
 FONT = "Ubuntu"
 

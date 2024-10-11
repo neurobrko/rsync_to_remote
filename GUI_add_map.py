@@ -3,7 +3,7 @@
 # python env for production:
 # /home/marpauli/code/cisco/rsync_to_VM/production/.venv/bin/python3.12
 
-from GUI_rsync_to_remote import get_map_keys, get_center
+from GUI_rsync_to_remote import get_map_keys, get_center, read_yaml
 from subprocess import run, PIPE, STDOUT
 from os import path, chdir
 import PySimpleGUI as sg
@@ -18,8 +18,7 @@ icon_file = path.join(script_root, "icons/add_map.png")
 find_path = "/"
 
 # import configuration variables
-with open(conf_file, "r") as f:
-    config = yaml.safe_load(f)
+config = read_yaml(conf_file)
 
 # load variables
 # create empty variables just for pyCharm not to raise undefined variable warning.
@@ -29,8 +28,7 @@ vars().update(config["rsync"])
 vars().update(config["gui"])
 
 # load file pair map
-with open(filemap_file, "r") as f:
-    file_map = yaml.safe_load(f)
+file_map = read_yaml(filemap_file)
 
 map_keys = get_map_keys(file_map)
 

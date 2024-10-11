@@ -17,7 +17,7 @@ sync:
   sync_all: false
   project: null
   file_keys:
-  - 8
+  - 2
 colors:
   GN: "\e[0;32m"
   GB: "\e[1;32m"
@@ -34,3 +34,4 @@ gui:
   DEFTC: lightgrey
   CHANGETC: red
   ERRTC: yellow
+  text_editor: /usr/bin/gedit

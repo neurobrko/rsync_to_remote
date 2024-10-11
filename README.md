@@ -5,6 +5,9 @@ mail: elvis@elvis.sk
 **Set of tools to manage and perform synchronization of files to remote system using rsync. Script also ouptuts 
 its action to console and logs them.**
 
+**IMPORTANT:** 
+See section _Instalation and usage_ for minimum mandatory steps to get scripts working properly.
+
 _**GUI_sync_suite.py**_ - wrapper script to get all the functionality in one place
 
 _**rsync_to_remote.py**_ - standalone CLI script to perform synchronization. Configuration is loaded from _sync_conf.yaml_, 
@@ -20,6 +23,10 @@ _**GUI_show_log.py**_ - show log for last sync. Option to view complete log file
 
 ## Instalation and usage ##
 Use Poetry or venv or install requirements directly onto your system (not recommended).
+
+**IMPORTANT:** 
+- Change variable _python_env_ in GUI_rsync_to_remote.py[line:16] to match your interpreter.
+- Change _text_editor_ value in _gui_ section in sync_conf.yaml to match your system text editor
 
 _Tip for pyCharm:_ put path to your Poetry/venv interpreter directly to shabang, so you can run scripts using External Tools
 and add them to any panel.
