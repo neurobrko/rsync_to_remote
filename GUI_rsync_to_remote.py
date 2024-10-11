@@ -25,10 +25,15 @@ rsync_file = path.join(script_root, "rsync_to_remote.py")
 filemap_file = path.join(script_root, "file_map.yaml")
 icon_file = path.join(script_root, "icons/settings.png")
 
-# import configuration variables
-with open(conf_file, "r") as f:
-    config = yaml.safe_load(f)
 
+def read_yaml(file):
+    with open(file, "r") as f:
+        content = yaml.safe_load(f)
+    return content
+
+
+# import configuration variables
+config = read_yaml(conf_file)
 # load variables
 # create empty variables just for pyCharm not to raise undefined variable warning.
 host = username = port = local_root_dir = rsync_options = ""
@@ -41,8 +46,7 @@ for vals in config.values():
     vars().update(vals)
 
 # load file pair map
-with open(filemap_file, "r") as f:
-    file_map = yaml.safe_load(f)
+file_map = read_yaml(filemap_file)
 
 
 def get_center(win) -> tuple[int, int]:

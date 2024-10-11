@@ -2,6 +2,8 @@
 **Set of tools to manage and perform synchronization of files to remote system using rsync. Script also ouptuts 
 its action to console and logs them.**
 
+_**GUI_sync_suite.py**_ - wrapper script to get all the functionality in one place
+
 _**rsync_to_remote.py**_ - standalone CLI script to perform synchronization. Configuration is loaded from _sync_conf.yaml_, 
 but can be altered using CLI arguments. See _rsync_to_remote.py -h_.
 
@@ -12,6 +14,12 @@ _**GUI_add_map.py**_ - synchronization uses list of file pairs stored in _file_m
 subset of project. It gives you opportunity to sync all files in project, or just selected files throughout all projects.
 
 _**GUI_show_log.py**_ - show log for last sync. Option to view complete log file.
+
+## Instalation ##
+Use Poetry or venv.
+
+_Tip for pyCharm:_ put path to your Poetr/venv interpreter directly to shabang and you can run scripts using External Tools
+and add them to any panel.
 
 ### _sync_conf.yaml_
 File contains configuration used for running _rsync_to_remote.py_ and some settings for GUI. Most of the settings can
