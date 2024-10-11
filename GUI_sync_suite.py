@@ -29,7 +29,7 @@ layout = [
             [
                 [
                     sg.Image(
-                        filename="sync_suite/sync.png",
+                        filename=path.join(script_root, "sync_suite", "sync.png"),
                         enable_events=True,
                         key="-SYNC-",
                     ),
@@ -45,7 +45,7 @@ layout = [
                 ],
                 [
                     sg.Image(
-                        filename="sync_suite/map.png",
+                        filename=path.join(script_root, "sync_suite", "map.png"),
                         enable_events=True,
                         key="-MAP-",
                     ),
@@ -67,7 +67,7 @@ layout = [
             [
                 [
                     sg.Image(
-                        filename="sync_suite/settings.png",
+                        filename=path.join(script_root, "sync_suite", "settings.png"),
                         enable_events=True,
                         key="-SETT-",
                     ),
@@ -83,7 +83,7 @@ layout = [
                 ],
                 [
                     sg.Image(
-                        filename="sync_suite/config.png",
+                        filename=path.join(script_root, "sync_suite", "config.png"),
                         enable_events=True,
                         key="-CONF-",
                     ),
@@ -105,7 +105,7 @@ layout = [
             [
                 [
                     sg.Image(
-                        filename="sync_suite/add.png",
+                        filename=path.join(script_root, "sync_suite", "add.png"),
                         enable_events=True,
                         key="-ADD-",
                     ),
@@ -121,7 +121,7 @@ layout = [
                 ],
                 [
                     sg.Image(
-                        filename="sync_suite/log.png",
+                        filename=path.join(script_root, "sync_suite", "log.png"),
                         enable_events=True,
                         key="-LOG-",
                     ),
