@@ -64,6 +64,4 @@ script parent dir is used
 **format:** {project: [source/path, target/path]}
 
 ### TODO:
-- [ ] remove log files older than X days
 - [ ] add GUI remove map for file_map.yaml
-- [ ] create GUI wrapper for all tools (SyncSuite)
