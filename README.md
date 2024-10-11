@@ -1,4 +1,7 @@
 # Synchronize files to remote
+author: elvis (Marek Paulik)\
+mail: elvis@elvis.sk
+
 **Set of tools to manage and perform synchronization of files to remote system using rsync. Script also ouptuts 
 its action to console and logs them.**
 
@@ -15,10 +18,10 @@ subset of project. It gives you opportunity to sync all files in project, or jus
 
 _**GUI_show_log.py**_ - show log for last sync. Option to view complete log file.
 
-## Instalation ##
-Use Poetry or venv.
+## Instalation and usage ##
+Use Poetry or venv or install requirements directly onto your system (not recommended).
 
-_Tip for pyCharm:_ put path to your Poetr/venv interpreter directly to shabang and you can run scripts using External Tools
+_Tip for pyCharm:_ put path to your Poetry/venv interpreter directly to shabang, so you can run scripts using External Tools
 and add them to any panel.
 
 ### _sync_conf.yaml_
