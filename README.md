@@ -88,7 +88,7 @@ script parent dir is used
   `#!/your/repo/dir/.venv/bin/python3`
   - in _GUI_rsync_to_remote.py_ change value of variable _python_env_ to:\
   `"/your/repo/dir/.venv/bin/python3"`
-  - in _sync_conf.yaml_ change value of _text_editor_ in _gui_ section to your favourite yaml viewer. (In Win, Notepad should be OK.)
+  - in _sync_conf.yaml_ change value of _text_editor_ and _terminal_app_ in _gui_ section to your favourite yaml viewer and your system terminal application. (In Win, Notepad and cmd should be OK.)
   - create launcher/desktop shortcut/taskbar pin for command:\
   `/your/repo/dir/.venv/bin/python3 /your/repo/dir/GUI_sync_suite.py`\
     (To be honest, I have no idea how that's done on Windows.)
