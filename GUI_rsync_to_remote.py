@@ -8,7 +8,7 @@ import re
 from os import path, chdir, stat, listdir, remove
 from subprocess import run
 from datetime import datetime
-from time import time
+from time import time, sleep
 import yaml
 import screeninfo
 
@@ -53,7 +53,7 @@ VM_check_timeout = result_timeout = default_browse_dir = date_format = ""
 project = file_keys = ""
 sync_all = False
 GN = GB = RN = RB = CN = CB = WU = BLD = UND = RST = ""
-sg_theme = DEFTC = CHANGETC = ERRTC = ""
+sg_theme = DEFTC = CHANGETC = ERRTC = text_editor = terminal_app = ""
 for vals in config.values():
     vars().update(vals)
 
@@ -517,7 +517,8 @@ def main():
                         "Running with unchanged configuration..."
                     )
                     window.refresh()
-                run(cmd_list)
+                    sleep(1)
+                run([terminal_app, "--", "bash", "-c", " ".join(cmd_list)])
                 break
         elif event == "Update conf":
             # update sync_conf, but do not run
@@ -531,7 +532,10 @@ def main():
             if result:
                 run(
                     [
-                        python_env,
+                        terminal_app,
+                        "--",
+                        "bash",
+                        "-c",
                         rsync_file,
                     ]
                 )
