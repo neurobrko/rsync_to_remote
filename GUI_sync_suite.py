@@ -12,6 +12,7 @@ script_root = path.dirname(path.realpath(__file__))
 conf_file = path.join(script_root, "sync_conf.yaml")
 conf = read_yaml(conf_file)
 text_editor = conf["gui"]["text_editor"]
+terminal_app = conf["gui"]["terminal_app"]
 sg.theme(conf["gui"]["sg_theme"])
 FONT = "Ubuntu"
 
@@ -156,7 +157,15 @@ while True:
     event, values = window.read()
     print(event)
     if event in ("-SYNC-", "-T-SYNC-"):
-        run(path.join(script_root, "rsync_to_remote.py"))
+        run(
+            [
+                terminal_app,
+                "--",
+                "bash",
+                "-c",
+                path.join(script_root, "rsync_to_remote.py"),
+            ]
+        )
     if event in ("-SETT-", "-T-SETT-"):
         run(path.join(script_root, "GUI_rsync_to_remote.py"))
     if event in ("-ADD-", "-T-ADD-"):

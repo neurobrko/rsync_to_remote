@@ -9,7 +9,7 @@ rsync:
   - ssh -p 13230
   local_root_dir: /home/marpauli/code/cisco/_SIMPLE
 script:
-  VM_check_timeout: 0
+  VM_check_timeout: 3
   result_timeout: 0
   default_browse_dir: /home/marpauli/code/cisco/_SIMPLE
   date_format: '%Y-%m-%d %H:%M:%S'
@@ -35,3 +35,4 @@ gui:
   CHANGETC: red
   ERRTC: yellow
   text_editor: /usr/bin/gedit
+  terminal_app: /usr/bin/gnome-terminal
