@@ -11,6 +11,7 @@ from datetime import datetime
 from time import time, sleep
 import yaml
 import screeninfo
+from platform import system
 
 # testing
 python_env = (
@@ -56,6 +57,15 @@ GN = GB = RN = RB = CN = CB = WU = BLD = UND = RST = ""
 sg_theme = DEFTC = CHANGETC = ERRTC = text_editor = terminal_app = ""
 for vals in config.values():
     vars().update(vals)
+
+# get system info and set command for running in console
+system = system().lower()
+terminal_run = [
+    terminal_app,
+    "--",
+    "bash",
+    "-c",
+]
 
 # load file pair map
 file_map = read_yaml(filemap_file)
@@ -510,15 +520,19 @@ def main():
         elif event == "Run":
             window["-ERROR-FIELD-"].update("")
             # run the command with cli arguments based on changes
-            cmd_list = get_cmd_list(values, window)
-            if cmd_list:
-                if len(cmd_list) == 2:
+            cmd = get_cmd_list(values, window)
+            if cmd:
+                if len(cmd) == 2:
                     window["-ERROR-FIELD-"].update(
                         "Running with unchanged configuration..."
                     )
                     window.refresh()
                     sleep(1)
-                run([terminal_app, "--", "bash", "-c", " ".join(cmd_list)])
+                if "linux" in system:
+                    cmd = terminal_run + [" ".join(cmd)]
+                    run(cmd)
+                else:
+                    run(" ".join(cmd))
                 break
         elif event == "Update conf":
             # update sync_conf, but do not run
@@ -530,15 +544,10 @@ def main():
             result = update_conf(values, window)
             # run using new settings
             if result:
-                run(
-                    [
-                        terminal_app,
-                        "--",
-                        "bash",
-                        "-c",
-                        rsync_file,
-                    ]
-                )
+                cmd = [rsync_file]
+                if "linux" in system:
+                    cmd = terminal_run + cmd
+                run(cmd)
                 break
         elif event == "-GET-KEYS-":
             new_window_get_keys(window)

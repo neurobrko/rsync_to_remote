@@ -10,7 +10,7 @@ rsync:
   local_root_dir: /home/marpauli/code/cisco/_SIMPLE
 script:
   VM_check_timeout: 3
-  result_timeout: 0
+  result_timeout: 10
   default_browse_dir: /home/marpauli/code/cisco/_SIMPLE
   date_format: '%Y-%m-%d %H:%M:%S'
 sync:

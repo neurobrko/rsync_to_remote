@@ -7,6 +7,7 @@ import PySimpleGUI as sg
 from os import path
 from subprocess import run
 from GUI_rsync_to_remote import get_center, read_yaml
+from platform import system
 
 script_root = path.dirname(path.realpath(__file__))
 conf_file = path.join(script_root, "sync_conf.yaml")
@@ -152,20 +153,22 @@ window = sg.Window(
     grab_anywhere=True,
 )
 window.move((pos := get_center(window))[0], pos[1])
+terminal_run = [
+    terminal_app,
+    "--",
+    "bash",
+    "-c",
+]
+
+system = system().lower()
 
 while True:
     event, values = window.read()
-    print(event)
     if event in ("-SYNC-", "-T-SYNC-"):
-        run(
-            [
-                terminal_app,
-                "--",
-                "bash",
-                "-c",
-                path.join(script_root, "rsync_to_remote.py"),
-            ]
-        )
+        cmd = [path.join(script_root, "rsync_to_remote.py")]
+        if "linux" in system:
+            cmd = terminal_run + cmd
+        run(cmd)
     if event in ("-SETT-", "-T-SETT-"):
         run(path.join(script_root, "GUI_rsync_to_remote.py"))
     if event in ("-ADD-", "-T-ADD-"):
