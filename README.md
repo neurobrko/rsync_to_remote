@@ -107,5 +107,4 @@ script parent dir is used
 
 
 ### TODO:
-- [ ] add GUI remove map for file_map.yaml
-- [ ] change 'Instant sync' in SySU so it is launched via terminal, so you can see output script (Possible problem in Windows?)
+- [ ] Test on Windows

@@ -13,7 +13,6 @@ script_root = path.dirname(path.realpath(__file__))
 conf_file = path.join(script_root, "sync_conf.yaml")
 log_filename = f"rsync_to_remote-{strftime('%y%m%d')}.log"
 log_file = path.join(script_root, "log", log_filename)
-log_viewer = "/usr/bin/gedit"
 
 conf = read_yaml(conf_file)
 sg.theme(conf["gui"]["sg_theme"])
@@ -22,10 +21,19 @@ log_viewer = conf["gui"]["text_editor"]
 
 if not path.exists(log_file):
     layout_warn = [
-        [sg.Text("Log file does not exist!", text_color=ERRTC, justification="center")],
+        [
+            sg.Text(
+                "Today's log file does not exist!",
+                text_color=ERRTC,
+                justification="center",
+            )
+        ],
         [sg.Push(), sg.Button("Exit"), sg.Push()],
     ]
-    window_warn = sg.Window("Error!", layout_warn, location=(1600, 135))
+    window_warn = sg.Window(
+        "Error!", layout_warn, finalize=True, icon="icons/view_log.png"
+    )
+    window_warn.move((pos := get_center(window_warn))[0], pos[1])
     while True:
         event = window_warn.read()[0]
         if event in ("Exit", sg.WIN_CLOSED):

@@ -356,7 +356,7 @@ layout = [
             [
                 [
                     sg.Text(
-                        "WARNING! rsync options are ignored when running w/o update conf! (TODO)",
+                        "WARNING! rsync options are ignored when running w/o update conf!",
                         text_color="yellow",
                     )
                 ]
@@ -445,6 +445,9 @@ layout = [
                     sg.Button("Run"),
                     sg.Button("Update conf"),
                     sg.Button("Update conf & Run"),
+                    sg.VerticalSeparator(),
+                    sg.Button("File map cleanup", key="-DEL-KEYS-"),
+                    sg.VerticalSeparator(),
                 ]
             ]
         ),
@@ -458,7 +461,7 @@ layout = [
 
 def new_window_get_keys(parent_window):
     layout_pop = [
-        [sg.Text("Select file pair keys:")],
+        [sg.Text("Select file pair keys:", size=(40, 1))],
         [
             (
                 [sg.Text(f"{proj}:")],
@@ -466,13 +469,13 @@ def new_window_get_keys(parent_window):
                     (
                         [
                             sg.Checkbox(
-                                f" [{key}]",
+                                f" [{key}]: {path.basename(mapa[0])}",
                                 default=True if key in file_keys else False,
                                 key=int(key),
+                                pad=((10, 0), (0, 0)),
+                                tooltip=f"src: {mapa[0]}\ntrg: {mapa[1]}",
                             )
                         ],
-                        [sg.Text(f"src: {mapa[0]}")],
-                        [sg.Text(f"trg: {mapa[1]}")],
                     )
                     for key, mapa in maps.items()
                 ],
@@ -483,7 +486,11 @@ def new_window_get_keys(parent_window):
     ]
 
     window_pop = sg.Window(
-        "Select files to sync", layout_pop, icon=icon_file, finalize=True
+        "Select files to sync",
+        layout_pop,
+        icon=icon_file,
+        finalize=True,
+        grab_anywhere=True,
     )
     window_pop.move((pos := get_center(window_pop))[0], pos[1])
 
@@ -498,6 +505,81 @@ def new_window_get_keys(parent_window):
             parent_window["-KEYS-"].update(" ".join(insert_keys))
             break
     window_pop.close()
+
+
+def file_map_cleanup():
+    pad = ((25, 0), (0, 0))
+    layout_del = [
+        [sg.Text("Select file pair keys:", size=(40, 1))],
+        [
+            (
+                [sg.Checkbox(f" {proj}", key=proj)],
+                [
+                    (
+                        [
+                            sg.Checkbox(
+                                f" [{key}]: {path.basename(mapa[0])}",
+                                key=int(key),
+                                pad=pad,
+                                tooltip=f"src: {mapa[0]}\n trg: {mapa[1]}",
+                            )
+                        ],
+                    )
+                    for key, mapa in maps.items()
+                ],
+            )
+            for proj, maps in file_map.items()
+        ],
+        [sg.Button("Delete!", button_color="red"), sg.Push(), sg.Button("Close")],
+    ]
+
+    window_del = sg.Window(
+        "Delete files from file_map.yaml",
+        layout_del,
+        icon=icon_file,
+        finalize=True,
+        grab_anywhere=True,
+    )
+    window_del.move((pos := get_center(window_del))[0], pos[1])
+
+    while True:
+        event_del, values_del = window_del.read()
+        if event_del in ("Close", sg.WIN_CLOSED):
+            break
+        if event_del == "Delete!":
+            # get all the checkbox keys
+            keys = [key for key, val in values_del.items() if val]
+            # filter out projects to delete completely
+            projects_to_del = [key for key in keys if type(key) == str]
+            # get keys of deleted projects
+            project_keys = []
+            for k, v in file_map.items():
+                if k in projects_to_del:
+                    project_keys += [k for k in v.keys()]
+            # filter out keys to delete from projects that are not deleted completely
+            keys_to_del = [
+                key for key in keys if type(key) == int and key not in project_keys
+            ]
+            # delete projects
+            for key in projects_to_del:
+                del file_map[key]
+            # cycle through rest of the project and delete rest of the keys
+            for k in keys_to_del:
+                for key, mapa in file_map.items():
+                    if k in mapa.keys():
+                        del file_map[key][k]
+            # remove empty projects
+            empty_projects = []
+            for proj, mapa in file_map.items():
+                if not mapa:
+                    empty_projects.append(proj)
+            for proj in empty_projects:
+                del file_map[proj]
+            # update file_map.yaml
+            with open(filemap_file, "w") as file:
+                yaml.dump(file_map, file, sort_keys=False)
+            break
+    window_del.close()
 
 
 def main():
@@ -551,6 +633,8 @@ def main():
                 break
         elif event == "-GET-KEYS-":
             new_window_get_keys(window)
+        elif event == "-DEL-KEYS-":
+            file_map_cleanup()
         elif event in list(fields.keys()):
             if event == "-DTF-":
                 window["-DTEX-"].update(
